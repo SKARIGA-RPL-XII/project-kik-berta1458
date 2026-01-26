@@ -5,8 +5,8 @@
         <div class="row">
             <div class="col-md-12">
                 <div class="title-body">
-                    <h3>Konseling</h3>
-                    <h1>Konseling Pada Bulan Januari</h1>
+                    <h3>Pengajuan Konseling</h3>
+                    <p>Ajukan permohonan konseling sesuai permasalahan yang sedang kamu hadapi. Data yang kamu kirim bersifat rahasia.</p>
                 </div>
             </div>
         </div>
@@ -19,9 +19,9 @@
                         <option value="">Peribadi</option>
                         <option value="">Sosial</option>
                         <option value="">Karir</option>
-                    </select><br>
-                    <label for="">Deskripsi</label>
-                    <input type="text" placeholder="Ringkasan masalah">
+                    </select><br><br>
+                    <label for="">Deskripsi</label><br>
+                    <textarea name="" placeholder="Ringkasan masalah" id=""></textarea>
                 </form>
             </div>
             <div class="col-md-6">
@@ -29,8 +29,16 @@
                 <input type="text" id="tanggal_konsultasi" class="form-control">
             </div>
         </div>
+        <div class="row">
+            <div class="col-md-12 btn-ajuan text-center">
+                <button>Batal</button>
+                <button class="submit-btn">Kirim</button>
+            </div>
+        </div>
     </div>
 </section>
+
+@include('layout/footer')
 
 <script>
     flatpickr("#tanggal_konsultasi", {

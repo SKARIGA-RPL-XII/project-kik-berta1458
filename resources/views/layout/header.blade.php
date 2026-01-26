@@ -20,18 +20,18 @@
                     <img src="/image/logo-putih.png" alt="eCounsel" class="logo">
                 </div>
                 <div class="col-md-6 text-center menu-tengah">
-                    <a href="#" class="menu-link">Pengajuan</a>
+                    <a href="/pengajuan-konseling" class="menu-link">Pengajuan</a>
 
                     <div class="avatar-wrapper">
-                        <div class="avatar-circle">
-                            <i class="fa-solid fa-user"></i>
-                        </div>
+                        <a href="/profil-siswa" class="avatar-circle">
+                            <img src="{{ asset('image/user.png') }}" alt="">
+                        </a>
                     </div>
 
-                    <a href="#" class="menu-link">Riwayat</a>
+                    <a href="/riwayat-konseling" class="menu-link">Riwayat</a>
                 </div>
                 <div class="col-md-3 d-flex align-items-center justify-content-end">
-                    <a href="#" class="home-btn">
+                    <a href="/siswa-dashboard" class="home-btn">
                         <i class="fa-solid fa-house"></i>
                     </a>
                 </div>

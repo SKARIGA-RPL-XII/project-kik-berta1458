@@ -3,17 +3,19 @@
 <section class="info">
     <div class="container">
         <div class="row">
-            <div class="col-md-6 profile-sec">
-                <div class="profile">
-                    <img src="{{ asset('image/user.png') }} " alt="">
-                    <h2>Berta Yuanita</h2>
+            <div class="col-md-6 ">
+                <div class="profile-sec">
+                    <div class="profile">
+                        <img src="{{ asset('image/user.png') }} " alt="">
+                        <h2>Berta Yuanita</h2>
+                    </div>
+                    <ul>
+                        <li><label for="">Nama</label><br><input type="text" readonly value="Berta Yuanita"></li>
+                        <li><label for="">Nis</label><br><input type="text" readonly value="0082507161"></li>
+                        <li><label for="">Kelas</label><br><input type="text" readonly value="XII-RPA"></li>
+                        <li><label for="">Jurusan</label><br><input type="text" readonly value="Rekayasa Perangkat Lunak"></li>
+                    </ul>
                 </div>
-                <ul>
-                    <li><label for="">Nama</label><br><input type="text" readonly value="Berta Yuanita"></li>
-                    <li><label for="">Nis</label><br><input type="text" readonly value="0082507161"></li>
-                    <li><label for="">Kelas</label><br><input type="text" readonly value="XII-RPA"></li>
-                    <li><label for="">Jurusan</label><br><input type="text" readonly value="Rekayasa Perangkat Lunak"></li>
-                </ul>
             </div>
             <div class="col-md-6 summary-card">
                 <ul>
