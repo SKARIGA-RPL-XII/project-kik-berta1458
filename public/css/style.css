@@ -133,16 +133,7 @@ body.landing-page {
     font-size: 14px;
     font-weight: 400;
     margin-top: 15px;
-}
-
-.footer {
-    background: #ffffff;
-    color: #000000;
-    font-size: 20px;
-    padding: 20px 0;
-    margin-top: 50px;
     text-align: center;
-    border-radius: 150px 150px 0 0;
 }
 
 .footer p {
@@ -256,75 +247,66 @@ body.login {
 /* main style */
 .main-header {
     background: #00244B;
-    border-bottom-left-radius: 50px;
-    border-bottom-right-radius: 50px;
-    position: relative;
-    margin-bottom: 50px;
+    position: fixed;
+    margin-top: 10px;
+    border-radius: 100px;
+    padding: 10px;
+    width: 98%;
+    top: 0;
+    left: 1%;
+    z-index: 1;
+
 }
 
 .logo {
     height: 45px;
 }
 
-.menu-tengah {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 40px;
-}
-
-.menu-link {
-    color: #ffffff;
-    font-weight: 600;
-    text-decoration: none;
-    font-size: 18px;
-}
-
-
-.avatar-wrapper {
-    position: relative;
-    top: 20px;
-}
-
-.avatar-circle img {
-    width: 100%;
-    height: 100%;
-    border-radius: 100%;
-}
-
-.avatar-circle {
-    width: 100px;
-    height: 100px;
-    background: #ffffff;
-    border: 10px solid #00244B;
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.avatar-circle i {
-    font-size: 36px;
-    color: #00244B;
-}
 
 .logout-btn {
     color: #ffffff;
     font-size: 22px;
 }
 
-.home-btn {
-    background: #ffffff;
-    padding: 10px;
-    border-radius: 100px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+.nav-menu .profil i {
+    color: #00244B;
 }
 
-.home-btn i {
-    color: #06294D;
-    font-size: 20px;
+.nav-menu .profil i:hover {
+    color: #00244B;
+}
+
+.nav-menu .profil:hover {
+    background: #FFB200;
+}
+
+.nav-menu .profil {
+    background: #ffffff;
+    padding: 5px 10px;
+    border-radius: 100%;
+}
+
+.nav-menu ul {
+    display: inline-flex;
+    list-style: none;
+    gap: 20px;
+    margin-top: 10px;
+    margin-bottom: 0;
+}
+
+.nav-menu ul li a:hover {
+    color: #FFB200;
+}
+
+.nav-menu ul li a {
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.nav-menu {
+    text-align: right;
 }
 
 .footer {
@@ -334,19 +316,19 @@ body.login {
     padding: 15px 0;
     text-align: center;
     width: 100%;
-    border-top-left-radius: 50px;
-    border-top-right-radius: 50px;
+    margin-top: 100px;
 }
 
 /* dashboard siswa */
 .info {
-    margin-top: 60px;
+    margin-top: 150px;
 }
 
 .profile-sec {
     background: #f2f2f2;
     border-radius: 10px;
-    padding: 40px 30px !important;}
+    padding: 40px 30px !important;
+}
 
 .profile-sec .profile {
     display: flex;
@@ -549,6 +531,16 @@ table .menunggu {
     display: inline-block;
 }
 
+table .ditolak {
+    background: #FBE7E8;
+    color: #A30D11;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 20px;
+    display: inline-block;
+}
+
 .slide p {
     color: #9e9e9e;
     font-size: 12px;
@@ -599,6 +591,10 @@ table .menunggu {
 }
 
 /* pengajuan */
+.pengajuan {
+    margin-top: 150px;
+}
+
 .form-pengajuan {
     background: #f2f2f2;
     border-radius: 10px;
@@ -684,6 +680,10 @@ table .menunggu {
 }
 
 /* riwayat */
+.riwayat {
+    margin-top: 150px;
+}
+
 .riwayat select {
     background: #00244B1A;
     border: none;
@@ -697,6 +697,7 @@ table .menunggu {
 
 .riwayat button {
     border: 1px solid #00244B;
+    background: #FFFFFF;
     color: #333333;
     border-radius: 10px;
     padding: 10px 12px;
@@ -720,16 +721,37 @@ table .menunggu {
     margin-bottom: 30px;
 }
 
-.riwayat .detail {
+.detail,
+.tolak,
+.terima,
+.isi-lap,
+.catatan {
     background: #00244B;
     padding: 10px 13px;
     border-radius: 50px;
     text-decoration: none;
 }
 
-.riwayat .detail i {
+.detail i,
+.tolak i,
+.terima i,
+.isi-lap i,
+.catatan i {
     color: #FFB200;
     font-size: 18px;
+}
+
+.isi-lap-done {
+    background: #A9A9A9;
+    padding: 10px 13px;
+    border-radius: 50px;
+    text-decoration: none;
+}
+
+.isi-lap-done i {
+    color: #6A6A6A;
+    font-size: 18px;
+
 }
 
 /* profile siswa */
@@ -798,4 +820,148 @@ table .menunggu {
     margin-top: 20px;
     cursor: pointer;
     border: none;
+}
+
+/* dashboard-konselor */
+.konseling-now {
+    margin: 70px 0 30px 0;
+}
+
+.info-konselor {
+    margin-top: 150px;
+}
+
+.info-konselor ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: inline-flex;
+    gap: 20px;
+}
+
+.info-konselor .summary-card ul li {
+    background: #f2f2f2;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 10px;
+    width: 22rem;
+}
+
+.info-konselor .isi i {
+    background: #00244B;
+    color: #FFB200;
+    padding: 10px;
+    border-radius: 100%;
+}
+
+.info-konselor .isi h4 {
+    color: #000000;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.info-konselor .title {
+    display: flex;
+    align-items: center;
+    justify-content: left;
+    gap: 10px;
+    width: 70%;
+}
+
+.info-konselor span {
+    background: #00244B;
+    color: #FFB200;
+    padding: 5px 10px;
+    border-radius: 20px;
+}
+
+.info-konselor .isi {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.info-konselor .isi h1 {
+    font-size: 24px;
+    font-weight: 500;
+    color: #000000;
+}
+
+.info-konselor .isi p {
+    font-size: 14px;
+    font-weight: 400;
+    color: #999999;
+}
+
+.info-konselor .isi:last-child {
+    margin-top: 15px;
+}
+
+.kalender {
+    margin: 30px 0;
+}
+
+.kalender .dayContainer {
+    display: grid !important;
+    grid-template-columns: repeat(7, 1fr) !important;
+    column-gap: 50px;
+}
+
+.permintaan {
+    margin-top: 150px;
+}
+
+.filter-wrap {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.filter select {
+    background: #00244B1A;
+    border: none;
+    padding: 10px 12px;
+    border-radius: 10px;
+}
+
+.filter select option {
+    color: #333333;
+}
+
+.filter button {
+    border: 1px solid #00244B;
+    background: #FFFFFF;
+    color: #333333;
+    border-radius: 10px;
+    padding: 10px 12px;
+}
+
+.search {
+    display: flex;
+    justify-content: left;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid #06294D;
+    border-radius: 10px;
+    padding: 10px;
+    width: 30%;
+}
+
+/* jadwal */
+.jadwal {
+    margin-top: 150px;
+}
+
+.kal-jadwal {
+    margin: 0;
+}
+
+.kal-jadwal .kalender {
+    margin: 0;
+}
+
+/* laporan */
+.laporan {
+    margin-top: 150px;
 }
