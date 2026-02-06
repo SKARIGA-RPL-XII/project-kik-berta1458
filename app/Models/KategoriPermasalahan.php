@@ -12,7 +12,6 @@ class KategoriPermasalahan extends Model
 
     protected $fillable = [
         'nama_kategori',
-        'deskripsi',
     ];
 
     public function pengajuan()

@@ -19,7 +19,6 @@ return new class extends Migration
                 'Sosial',
                 'Karier'
             ]);
-            $table->text('deskripsi')->nullable();
             $table->timestamps();
         });
     }

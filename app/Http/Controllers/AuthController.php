@@ -5,8 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use App\Models\Siswa;
-use App\Models\Konselor;
+use App\Models\User;
 
 class AuthController extends Controller
 {
@@ -22,28 +21,27 @@ class AuthController extends Controller
             'password' => 'required'
         ]);
 
-        $siswa = Siswa::where('nis', $request->username)->first();
-        if ($siswa && Hash::check($request->password, $siswa->password)) {
-            session([
-                'login' => true,
-                'role' => 'siswa',
-                'id_user' => $siswa->id,
-            ]);
-            return redirect('/siswa/dashboard');
+        $user = User::where('username', $request->username)->first();
+
+        if (!$user || !Hash::check($request->password, $user->password)) {
+            return back()->with('error', 'Username atau password salah');
         }
 
-        $konselor = Konselor::where('nip', $request->username)->first();
-        if ($konselor && Hash::check($request->password, $konselor->password)) {
-            session([
-                'login' => true,
-                'role' => 'konselor',
-                'id_user' => $konselor->id,
-                'nama' => $konselor->nama
-            ]);
-            return redirect('/konselor/dashboard');
+        session([
+            'login' => true,
+            'role' => $user->role,
+            'id_user' => $user->id,
+        ]);
+
+        if ($user->role === 'siswa') {
+            return redirect('/dashboard-siswa');
         }
 
-        return back()->with('error', 'Username atau password salah');
+        if ($user->role === 'konselor') {
+            return redirect('/dashboard-konselor');
+        }
+
+        return back();
     }
 
 
