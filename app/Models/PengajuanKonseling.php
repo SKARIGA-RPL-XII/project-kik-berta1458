@@ -21,10 +21,14 @@ class PengajuanKonseling extends Model
         'alasan_penolakan',
     ];
 
+    public function pengajuan()
+    {
+        return $this->belongsTo(PengajuanKonseling::class, 'id_pengajuan');
+    }
 
     public function siswa()
     {
-        return $this->belongsTo(Siswa::class);
+        return $this->belongsTo(Siswa::class, 'id_siswa');
     }
 
     public function konselor()

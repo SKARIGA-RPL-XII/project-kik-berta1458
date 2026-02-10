@@ -22,12 +22,11 @@
                         <h1>eCounsel - Skariga </h1>
                         <p>Sistem Bimbingan Konseling Online Sekolah.</p>
                         <label for="">Username</label><br>
-                        <input type="text" name="username" id=""><br><br>
+                        <input type="text" name="username" id="username"><br><br>
                         <label for="">Password</label><br>
-                        <input type="password" name="password" id=""><br>
+                        <input type="password" name="password" id="password"><br>
                         <ul>
-                            <li class="ingat-saya"><input type="checkbox" name="" id=""><span>Ingat saya</span></li>
-                            <li><a href="#">Lupa Password?</a></li>
+                            <li class="ingat-saya"><input type="checkbox" name="" id="rememberMe"><span>Simpan Data Pengguna</span></li>
                         </ul><br>
                         <button type="submit">Masuk</button>
                     </form>
@@ -38,3 +37,32 @@
 </body>
 
 </html>
+
+<script>
+    window.onload = function() {
+        const savedUsername = localStorage.getItem('saved_username');
+        const savedPassword = localStorage.getItem('saved_password');
+
+        if (savedUsername) {
+            document.getElementById('username').value = savedUsername;
+        }
+
+        if (savedPassword) {
+            document.getElementById('password').value = savedPassword;
+        }
+    };
+
+    document.querySelector('form').addEventListener('submit', function() {
+        const remember = document.getElementById('rememberMe').checked;
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+
+        if (remember) {
+            localStorage.setItem('saved_username', username);
+            localStorage.setItem('saved_password', password);
+        } else {
+            localStorage.removeItem('saved_username');
+            localStorage.removeItem('saved_password');
+        }
+    });
+</script>

@@ -15,7 +15,6 @@ class Konselor extends Model
         'nama',
     ];
 
-    // ================= RELASI =================
 
     public function user()
     {

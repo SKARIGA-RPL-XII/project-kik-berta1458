@@ -21,11 +21,21 @@
                 </div>
                 <div class="col-md-9">
                     <div class="nav-menu">
-                        <ul>
-                            <li><a href="/siswa-dashboard">Dashboard</a></li>
+                        <ul class="menu">
+                            @if(session('role')==='siswa')
+                            <li><a href="/dashboard-siswa">Dashboard</a></li>
                             <li><a href="/pengajuan-konseling">Pengajuan</a></li>
                             <li><a href="/riwayat-konseling">Riwayat</a></li>
                             <li><a class="profil" href="/profil-siswa"><i class="fa-solid fa-user"></i></a></li>
+                            @endif
+
+                            @if(session('role')==='konselor')
+                            <li><a href="/dashboard-konselor">Dashboard</a></li>
+                            <li><a href="/permintaan-konseling">Permintaan</a></li>
+                            <li><a href="/jadwal-konseling">Jadwal</a></li>
+                            <li><a href="/laporan-konseling">Laporan</a></li>
+                            <li><a class="logout" href="#"><i class="fa-solid fa-arrow-right-from-bracket"></i></a></li>
+                            @endif
                         </ul>
                     </div>
                 </div>

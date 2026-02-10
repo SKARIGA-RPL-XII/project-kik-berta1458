@@ -7,37 +7,37 @@
                 <ul>
                     <li>
                         <div class="isi">
-                            <div class="title"><i class="fa-solid fa-arrow-up-from-bracket"></i>
+                            <div class="title"><i class="fa-solid fa-clipboard-list"></i>
                                 <h4>Jumlah Permintaan Baru</h4>
                             </div>
                             <span>2026</span>
                         </div>
                         <div class="isi">
-                            <h1>10 Kali</h1>
+                            <h1>{{ $permintaanBaru }} Sesi</h1>
                             <p>Pada tahun ini</p>
                         </div>
                     </li>
                     <li>
                         <div class="isi">
-                            <div class="title"><i class="fa-solid fa-arrow-up-from-bracket"></i>
+                            <div class="title"><i class="fa-solid fa-user-clock"></i>
                                 <h4>Jumlah Konseling Aktif</h4>
                             </div>
                             <span>2026</span>
                         </div>
                         <div class="isi">
-                            <h1>10 Kali</h1>
+                            <h1>{{ $konselingAktif}} aktif</h1>
                             <p>Pada tahun ini</p>
                         </div>
                     </li>
                     <li>
                         <div class="isi">
-                            <div class="title"><i class="fa-solid fa-arrow-up-from-bracket"></i>
+                            <div class="title"><i class="fa-solid fa-circle-check"></i>
                                 <h4>Jumlah Terselesaikan</h4>
                             </div>
                             <span>2026</span>
                         </div>
                         <div class="isi">
-                            <h1>10 Kali</h1>
+                            <h1>{{ $konselingSelesai}} Sesi</h1>
                             <p>Pada tahun ini</p>
                         </div>
                     </li>
@@ -75,16 +75,17 @@
                             </tr>
                         </thead>
                         <tbody>
+                            @forelse ($jadwalHariIni as $j)
                             <tr>
-                                <td>19 Desember 2026</td>
-                                <td>Berta Yuanita</td>
-                                <td>Karir</td>
+                                <td>{{ \Carbon\Carbon::parse($j->tanggal_konseling)->translatedFormat('d F Y')}}</td>
+                                <td>{{ $j->pengajuan->siswa->nama }}</td>
+                                <td>{{ $j->pengajuan->kategori->nama_kategori }}</td>
                             </tr>
+                            @empty
                             <tr>
-                                <td>19 Desember 2026</td>
-                                <td>Candy Cantika</td>
-                                <td>Akademik</td>
+                                <td colspan="3">Tidak ada jadwal konseling hari ini</td>
                             </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>

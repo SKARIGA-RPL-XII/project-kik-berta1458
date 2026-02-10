@@ -268,19 +268,22 @@ body.login {
     font-size: 22px;
 }
 
-.nav-menu .profil i {
+.nav-menu .profil i,
+.nav-menu .logout i {
     color: #00244B;
 }
 
-.nav-menu .profil i:hover {
+.nav-menu .profil i:hover,
+.nav-menu .logout i:hover {
     color: #00244B;
 }
 
-.nav-menu .profil:hover {
+.nav-menu .profil:hover .nav-menu .logout:hover {
     background: #FFB200;
 }
 
-.nav-menu .profil {
+.nav-menu .profil,
+.nav-menu .logout {
     background: #ffffff;
     padding: 5px 10px;
     border-radius: 100%;
@@ -321,7 +324,7 @@ body.login {
 
 /* dashboard siswa */
 .info {
-    margin-top: 150px;
+    margin-top: 0;
 }
 
 .profile-sec {
@@ -376,16 +379,32 @@ body.login {
     width: 100%;
 }
 
+.banner-siswa {
+    background-image: linear-gradient(359.02deg, #00244B 0.76%, rgba(0, 36, 75, 0) 49.92%, #00244B 99.09%),
+        url(/image/banner-siswa.jpeg);
+    background-position: center;
+    background-size: cover;
+    border-bottom-left-radius: 20px;
+    height: 350px;
+    margin-bottom: -30px;
+    border-bottom-right-radius: 20px;
+}
+
 .info ul {
     list-style: none;
     padding: 0;
+    margin: 0;
+    display: inline-flex;
+    gap: 20px;
 }
 
 .info .summary-card ul li {
-    background: #f2f2f2;
+    background: #ffffff;
     border-radius: 10px;
     padding: 20px;
     margin-bottom: 10px;
+    width: 22rem;
+    box-shadow: 0px 4px 20px 0px #32323240;
 }
 
 .info .isi i {
@@ -626,6 +645,44 @@ table .ditolak {
     min-height: 278px;
 }
 
+.highlight-konseling {
+    background: #00244B;
+    width: 100%;
+    margin-left: 28px !important;
+}
+
+.flatpickr-day.today,
+.flatpickr-day:hover {
+    border-color: #00244B;
+    width: 100%;
+    margin-left: 28px !important;
+}
+
+.flatpickr-current-month .numInputWrapper span.arrowUp:after {
+    border-bottom-color: #FFD700 !important;
+    margin-top: 3px !important;
+    margin-left: 3px !important;
+}
+
+.flatpickr-current-month .numInputWrapper span.arrowDown:after {
+    border-top-color: #FFD700 !important;
+    margin-left: 3px !important;
+}
+
+.flatpickr-prev-month svg,
+.flatpickr-next-month svg {
+    fill: #FFB200 !important;
+    margin-top: -10px !important;
+    width: 20px !important;
+    height: 20px !important;
+}
+
+.flatpickr-day.selected {
+    background: #00244B !important;
+    width: 100%;
+    margin-left: 28px !important;
+}
+
 .flatpickr-calendar.inline {
     display: block;
     position: relative;
@@ -648,6 +705,10 @@ table .ditolak {
     margin: 0 auto;
 }
 
+.flatpickr-day {
+    margin-left: 40px !important;
+}
+
 .flatpickr-days {
     width: 95% !important;
     margin: 0 auto;
@@ -657,6 +718,7 @@ table .ditolak {
     width: 100% !important;
     min-width: 100% !important;
     max-width: 100% !important;
+    text-align: center !important;
 }
 
 .btn-ajuan {
@@ -683,7 +745,7 @@ button.btn-tambah-ajuan {
     border: none;
     border-radius: 10px;
     padding: 10px 12px;
-    background: #00244B ;
+    background: #00244B;
     color: #ffffff;
     font-weight: 500;
     width: 50%;
@@ -772,6 +834,7 @@ button.btn-tambah-ajuan {
     padding: 10px 13px;
     border-radius: 50px;
     text-decoration: none;
+    border: none;
 }
 
 .detail i,
@@ -1033,6 +1096,123 @@ button.tutup {
     margin-top: 150px;
 }
 
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+}
+
+.modal-box {
+    width: 450px;
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    padding: 30px 30px 20px;
+}
+
+.modal-header h2 {
+    font-size: 16px;
+    text-align: center;
+    margin: 0;
+}
+
+.modal-header {
+    background: #002B5B;
+    padding: 15px !important;
+    color: white;
+    text-align: center;
+    font-weight: 600;
+    border-top-right-radius: 10px !important;
+    border-top-left-radius: 10px !important;
+    justify-content: center;
+}
+
+.modal-content {
+    font-size: 14px;
+    color: #000000;
+    font-weight: 400;
+
+}
+
+.modal-content {
+    padding: 20px;
+    border: 1px solid #00244B !important;
+    border-top: none;
+    border-bottom-right-radius: 10px !important;
+    border-bottom-left-radius: 10px !important;
+
+}
+
+.modal-actions button {
+    border: none;
+}
+
+.modal-actions {
+    text-align: center;
+    padding: 10px 20px;
+}
+
+#closeModalDetail {
+    background: #002B5B;
+    color: white;
+    padding: 8px 20px;
+    border-radius: 6px;
+}
+
+#inputAlasan{
+    border: none;
+}
+
+.btn-batal,
+.btn-kirim {
+    background: #002B5B;
+    color: white;
+    padding: 10px 28px;
+    border-radius: 10px;
+    font-size: 15px;
+    cursor: pointer;
+    border: none;
+}
+
+.modal-success {
+    text-align: center;
+    padding: 30px 20px;
+}
+
+.success-icon {
+    width: 70px;
+    height: 70px;
+    margin: 0 auto;
+    border-radius: 50%;
+    background: #E7F8F0;
+    color: #22c55e;
+    font-size: 35px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.success-title {
+    font-size: 22px;
+    font-weight: bold;
+    margin-top: 15px;
+}
+
+.success-text {
+    font-size: 15px;
+    color: #374151;
+    margin-top: 10px;
+}
+
+
 .filter-wrap {
     display: flex;
     justify-content: space-between;
@@ -1083,7 +1263,7 @@ button.tutup {
 }
 
 .filter input[type="date"]::after {
-    content: "\f078"; 
+    content: "\f078";
     font-family: "Font Awesome 6 Free";
     font-weight: 900;
     position: absolute;

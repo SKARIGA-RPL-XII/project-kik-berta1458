@@ -20,6 +20,6 @@ class JadwalKonseling extends Model
 
     public function pengajuan()
     {
-        return $this->belongsTo(PengajuanKonseling::class);
+        return $this->belongsTo(PengajuanKonseling::class, 'id_pengajuan');
     }
 }

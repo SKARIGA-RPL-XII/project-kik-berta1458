@@ -6,9 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('pengajuan_konseling', function (Blueprint $table) {
@@ -33,6 +30,7 @@ return new class extends Migration
                 'menunggu',
                 'dijadwalkan',
                 'ditolak',
+                'berlangsung',
                 'selesai'
             ])->default('menunggu');
 
@@ -42,9 +40,6 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('pengajuan');
