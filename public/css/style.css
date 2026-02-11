@@ -140,6 +140,12 @@ body.landing-page {
     margin: 0;
 }
 
+.kosong{
+    text-align: center;
+    font-size: 14px;
+    font-weight: 400;
+    color: #999999;
+}
 /* login */
 body.login {
     background: #00244B1A;
@@ -320,6 +326,8 @@ body.login {
     text-align: center;
     width: 100%;
     margin-top: 100px;
+    position: relative;
+    bottom: 0;
 }
 
 /* dashboard siswa */

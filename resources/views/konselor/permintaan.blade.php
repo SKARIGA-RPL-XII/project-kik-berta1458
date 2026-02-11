@@ -46,6 +46,11 @@
                             </tr>
                         </thead>
                         <tbody>
+                            @if($data->isEmpty())
+                            <tr>
+                                <td colspan="4" class="kosong">Tidak ada permintaan konseling</td>
+                            </tr>
+                            @else
                             @foreach ($data as $permintaan)
                             <tr>
                                 <td> {{ \Carbon\Carbon::parse($permintaan->tanggal_pengajuan)->format('d M Y') }}</td>
@@ -57,6 +62,7 @@
                                 </td>
                             </tr>
                             @endforeach
+                            @endif
                         </tbody>
                     </table>
                 </div>

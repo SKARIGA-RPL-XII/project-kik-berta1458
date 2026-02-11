@@ -15,10 +15,13 @@ class KonselorPermintaanController extends Controller
 
         $data = PengajuanKonseling::with(['siswa', 'kategori'])
             ->when($tanggal, fn($q) => $q->whereDate('tanggal_pengajuan', $tanggal))
-            ->orderBy('tanggal_pengajuan', 'asc')->get();
+            ->where('status', 'menunggu') 
+            ->orderBy('tanggal_pengajuan', 'asc')
+            ->get();
 
         return view('konselor.permintaan', compact('data'));
     }
+
 
     public function tolak(Request $request, $id)
     {

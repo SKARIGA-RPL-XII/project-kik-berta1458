@@ -83,7 +83,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="3">Tidak ada jadwal konseling hari ini</td>
+                                <td colspan="3" class="kosong">Tidak ada jadwal konseling hari ini</td>
                             </tr>
                             @endforelse
                         </tbody>
