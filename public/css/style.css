@@ -140,12 +140,13 @@ body.landing-page {
     margin: 0;
 }
 
-.kosong{
+.kosong {
     text-align: center;
     font-size: 14px;
     font-weight: 400;
     color: #999999;
 }
+
 /* login */
 body.login {
     background: #00244B1A;
@@ -657,6 +658,13 @@ table .ditolak {
     background: #00244B;
     width: 100%;
     margin-left: 28px !important;
+}
+
+.flatpickr-day.punya-jadwal {
+    background: #00244B;
+    width: 100%;
+    margin-left: 28px !important;
+    color: #FFFFFF !important;
 }
 
 .flatpickr-day.today,
@@ -1175,7 +1183,7 @@ button.tutup {
     border-radius: 6px;
 }
 
-#inputAlasan{
+#inputAlasan {
     border: none;
 }
 
@@ -1327,6 +1335,7 @@ button.tutup {
 }
 
 /* jadwal */
+
 .jadwal {
     margin-top: 150px;
 }
