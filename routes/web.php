@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\KonselorDashboardController;
 use App\Http\Controllers\KonselorPermintaanController;
 use App\Http\Controllers\KonselorJadwalController;
+use App\Http\Controllers\KonselorLaporanController;
 
 
 Route::get('/', fn() => view('index'));
@@ -28,5 +29,6 @@ Route::middleware(['auth.custom', 'role:konselor'])->group(function () {
     Route::post('/konselor/permintaan/{id}/tolak', [KonselorPermintaanController::class, 'tolak']);
     Route::post('/konselor/permintaan/{id}/terima', [KonselorPermintaanController::class, 'terima']);
     Route::get('/jadwal-konseling', [KonselorJadwalController::class, 'index']);
-    Route::get('/laporan-konseling', fn() => view('konselor/laporan'));
+    Route::get('/laporan-konseling',[KonselorLaporanController::class, 'index']);
+    Route::post('/konselor/laporan/{id}/simpan', [KonselorLaporanController::class, 'simpanLaporan']);
 });

@@ -47,11 +47,11 @@
     </div>
 </section>
 
-<section class="kalender">
+<section class="kalender kal-jadwal">
     <div class="container">
         <div class="row">
             <div class="col-md-12">
-                <div class="kalender" id="kalender"></div>
+                <div id="kalender"></div>
             </div>
         </div>
     </div>
@@ -97,8 +97,34 @@
 @include('layout.footer')
 
 <script>
-    flatpickr("#kalender", {
+    let tanggalAdaJadwal = @json($jadwalHighlight);
+    let kalender = flatpickr("#kalender", {
         inline: true,
-        dateFormat: "Y-m-d"
+        dateFormat: "Y-m-d",
+        disableMobile: true,
+
+        onReady: function(selectedDates, dateStr, instance) {
+            highlightDates(instance);
+        },
+
+        onMonthChange: function(selectedDates, dateStr, instance) {
+            highlightDates(instance);
+        }
     });
+
+    function highlightDates(instance) {
+        let days = instance.days.childNodes;
+
+        days.forEach(day => {
+            let tgl = day.dateObj.getFullYear() + '-' +
+                String(day.dateObj.getMonth() + 1).padStart(2, '0') + '-' +
+                String(day.dateObj.getDate()).padStart(2, '0');
+
+            if (tanggalAdaJadwal.includes(tgl)) {
+                day.classList.add("punya-jadwal");
+            } else {
+                day.classList.remove("punya-jadwal");
+            }
+        });
+    }
 </script>

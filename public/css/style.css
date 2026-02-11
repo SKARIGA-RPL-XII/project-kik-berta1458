@@ -389,14 +389,11 @@ body.login {
 }
 
 .banner-siswa {
-    background-image: linear-gradient(359.02deg, #00244B 0.76%, rgba(0, 36, 75, 0) 49.92%, #00244B 99.09%),
-        url(/image/banner-siswa.jpeg);
+    background-image: linear-gradient(0deg, #00244B 15%, rgba(0, 36, 75, 0) 45%, #00244B 80%), url(/image/banner-siswa.jpeg);
     background-position: center;
     background-size: cover;
-    border-bottom-left-radius: 20px;
-    height: 350px;
-    margin-bottom: -30px;
-    border-bottom-right-radius: 20px;
+    height: 400px;
+    margin-bottom: -70px;
 }
 
 .info ul {
@@ -412,7 +409,7 @@ body.login {
     border-radius: 10px;
     padding: 20px;
     margin-bottom: 10px;
-    width: 22rem;
+    width: 22.5rem;
     box-shadow: 0px 4px 20px 0px #32323240;
 }
 
@@ -469,6 +466,17 @@ body.login {
 .konseling-bulanan {
     padding: 50px 0;
     ;
+}
+
+.modal-header-laporan h2 {
+    color: #5A0010;
+    background: #5A00101A;
+    padding: 5px;
+    width: 40%;
+    margin: 0 auto;
+    font-size: 18px;
+    font-weight: 600;
+    text-align: center;
 }
 
 .title-body h3 {
@@ -1024,8 +1032,8 @@ button.tutup {
     background: #f2f2f2;
     border-radius: 10px;
     padding: 20px;
-    margin-bottom: 10px;
-    width: 22rem;
+    margin-bottom: 50px;
+    width: 22.5rem;
 }
 
 .info-konselor .isi i {
@@ -1176,7 +1184,8 @@ button.tutup {
     padding: 10px 20px;
 }
 
-#closeModalDetail {
+#closeModalDetail,
+#closeModalCatatan {
     background: #002B5B;
     color: white;
     padding: 8px 20px;
@@ -1351,4 +1360,81 @@ button.tutup {
 /* laporan */
 .laporan {
     margin-top: 150px;
+}
+
+/* ---- Popup Isi Laporan ---- */
+.modal-laporan {
+    width: 750px;
+    background: white;
+    padding: 25px;
+    border-radius: 10px;
+}
+
+.identitas-lap p {
+    margin: 0;
+}
+
+.identitas-lap {
+    margin: 25px 0;
+    font-size: 15px;
+}
+
+.identitas-lap span:first-child {
+    width: 130px;
+    display: inline-block;
+    font-weight: 600;
+}
+
+.table-laporan {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 25px;
+}
+
+.table-laporan th {
+    background: #00224B;
+    padding: 12px;
+    color: white;
+    width: 180px;
+    vertical-align: top;
+}
+
+.table-laporan td {
+    border: 1px solid rgb(209, 209, 209);
+    padding: 12px;
+    vertical-align: top;
+    font-weight: 400;
+}
+
+.textarea-laporan {
+    width: 100%;
+    height: 100px;
+    padding: 12px;
+    border-radius: 5px;
+    border: none;
+    resize: vertical;
+}
+
+.modal-actions-laporan {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.btn-batal-lap,
+.btn-simpan-lap {
+    padding: 10px 35px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    color: white;
+}
+
+.btn-batal-lap {
+    background: #00244B;
+}
+
+.btn-simpan-lap {
+    background: #00244B;
 }

@@ -25,6 +25,11 @@ class KonselorDashboardController extends Controller
             ->where('status', 'selesai')
             ->count();
 
+        $jadwalHighlight = JadwalKonseling::whereIn('status', ['dijadwalkan', 'berlangsung'])
+            ->pluck('tanggal_konseling')
+            ->map(fn($tgl) => \Carbon\Carbon::parse($tgl)->format('Y-m-d'))
+            ->toArray();
+
         $jadwalHariIni = JadwalKonseling::with(['pengajuan.siswa'])
             ->whereDate('tanggal_konseling', Carbon::today())
             ->get();
@@ -32,6 +37,7 @@ class KonselorDashboardController extends Controller
             'permintaanBaru',
             'konselingAktif',
             'konselingSelesai',
+            'jadwalHighlight',
             'jadwalHariIni'
         ));
     }
