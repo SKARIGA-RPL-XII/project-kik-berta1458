@@ -10,8 +10,6 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
-    protected $primaryKey = 'id_user';
-
     protected $fillable = [
         'username',
         'password',
@@ -30,15 +28,14 @@ class User extends Authenticatable
         ];
     }
 
-    // ================= RELASI =================
-
     public function siswa()
     {
-        return $this->hasOne(Siswa::class, 'id_user', 'id_user');
+        return $this->hasOne(Siswa::class, 'id_user', 'id');
     }
 
     public function konselor()
     {
-        return $this->hasOne(Konselor::class, 'id_user', 'id_user');
+        return $this->hasOne(Konselor::class, 'id_user', 'id');
     }
 }
+

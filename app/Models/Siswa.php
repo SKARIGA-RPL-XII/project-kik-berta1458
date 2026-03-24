@@ -19,7 +19,6 @@ class Siswa extends Model
         'jurusan',
     ];
 
-    // ================= RELASI =================
 
     public function user()
     {

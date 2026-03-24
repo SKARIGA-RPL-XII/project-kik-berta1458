@@ -1,4 +1,12 @@
 @include('layout.header')
+<section class="banner-siswa">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+            </div>
+        </div>
+    </div>
+</section>
 
 <section class="info-konselor">
     <div class="container">

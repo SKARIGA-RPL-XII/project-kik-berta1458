@@ -21,11 +21,6 @@ class PengajuanKonseling extends Model
         'alasan_penolakan',
     ];
 
-    public function pengajuan()
-    {
-        return $this->belongsTo(PengajuanKonseling::class, 'id_pengajuan');
-    }
-
     public function siswa()
     {
         return $this->belongsTo(Siswa::class, 'id_siswa');
@@ -33,7 +28,7 @@ class PengajuanKonseling extends Model
 
     public function konselor()
     {
-        return $this->belongsTo(Konselor::class);
+        return $this->belongsTo(Konselor::class, 'id_konselor');
     }
 
     public function kategori()

@@ -23,20 +23,70 @@
                     <div class="nav-menu">
                         <ul class="menu">
                             @if(session('role')==='siswa')
-                            <li><a href="/dashboard-siswa">Dashboard</a></li>
-                            <li><a href="/pengajuan-konseling">Pengajuan</a></li>
-                            <li><a href="/riwayat-konseling">Riwayat</a></li>
+                            <li><a href="/dashboard-siswa" class="{{ request()->is('dashboard-siswa') ? 'active' : '' }}">Dashboard</a></li>
+                            <li><a href="/pengajuan-konseling" class="{{ request()->is('pengajuan-konseling') ? 'active' : '' }}">Pengajuan</a></li>
+                            <li><a href="/riwayat-konseling" class="{{ request()->is('riwayat-konseling') ? 'active' : '' }}">Riwayat</a></li>
                             <li><a class="profil" href="/profil-siswa"><i class="fa-solid fa-user"></i></a></li>
                             @endif
 
                             @if(session('role')==='konselor')
-                            <li><a href="/dashboard-konselor">Dashboard</a></li>
-                            <li><a href="/permintaan-konseling">Permintaan</a></li>
-                            <li><a href="/jadwal-konseling">Jadwal</a></li>
-                            <li><a href="/laporan-konseling">Laporan</a></li>
-                            <li><a class="logout" href="#"><i class="fa-solid fa-arrow-right-from-bracket"></i></a></li>
+                            <li>
+                                <a href="/dashboard-konselor"
+                                    class="{{ request()->is('dashboard-konselor') ? 'active' : '' }}">
+                                    Dashboard
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/permintaan-konseling"
+                                    class="{{ request()->is('permintaan-konseling') ? 'active' : '' }}">
+                                    Permintaan
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/jadwal-konseling"
+                                    class="{{ request()->is('jadwal-konseling') ? 'active' : '' }}">
+                                    Jadwal
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/laporan-konseling"
+                                    class="{{ request()->is('laporan-konseling') ? 'active' : '' }}">
+                                    Laporan
+                                </a>
+                            </li>
+                            <li><button class="logout" id="btnLogout" type="button"><i class="fa-solid fa-arrow-right-from-bracket"></i></a></li>
+                            @endif
+
+                            @if(session('role')==='admin')
+                            <li><a href="/dashboard-admin" class="{{ request()->is('dashboard-admin') ? 'active' : '' }}">Dashboard</a></li>
+                                                        <li><a href="/siswa" class="{{ request()->is('siswa') ? 'active' : '' }}">Kelola Siswa</a></li>
+                            <li><a href="/konselor" class="{{ request()->is('konselor') ? 'active' : '' }}">Kelola Konselor</a></li>
+                            <li><a href="/konseling" class="{{ request()->is('konseling') ? 'active' : '' }}">Kelola Konseling</a></li>
+                            <li><button class="logout" id="btnLogout" type="button"><i class="fa-solid fa-arrow-right-from-bracket"></i></a></li>
                             @endif
                         </ul>
+                    </div>
+
+                    <div id="modalLogout" class="modal-overlay show" style="display:none;">
+                        <div class="modal-box modal-logout">
+
+                            <div class="logout-icon">
+                                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                            </div>
+
+                            <h2>Konfirmasi Keluar</h2>
+                            <p>Apakah Anda yakin ingin keluar dari sistem?</p>
+
+                            <div class="logout-actions">
+                                <button id="batalLogout" class="btn-batal-logout">Batal</button>
+
+                                <form action="{{ route('logout') }}" method="POST">
+                                    @csrf
+                                    <button type="submit" class="btn-keluar">Keluar</button>
+                                </form>
+                            </div>
+
+                        </div>
                     </div>
                 </div>
             </div>
@@ -45,3 +95,12 @@
 </body>
 
 </html>
+
+<script>
+    document.getElementById('btnLogout').addEventListener('click', function() {
+        document.getElementById('modalLogout').style.display = 'flex';
+    });
+    document.getElementById('batalLogout').addEventListener('click', function() {
+        document.getElementById('modalLogout').style.display = 'none';
+    });
+</script>

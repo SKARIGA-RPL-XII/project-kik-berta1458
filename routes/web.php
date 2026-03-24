@@ -6,6 +6,7 @@ use App\Http\Controllers\KonselorDashboardController;
 use App\Http\Controllers\KonselorPermintaanController;
 use App\Http\Controllers\KonselorJadwalController;
 use App\Http\Controllers\KonselorLaporanController;
+use App\Http\Controllers\AdminController;
 
 
 Route::get('/', fn() => view('index'));
@@ -29,6 +30,20 @@ Route::middleware(['auth.custom', 'role:konselor'])->group(function () {
     Route::post('/konselor/permintaan/{id}/tolak', [KonselorPermintaanController::class, 'tolak']);
     Route::post('/konselor/permintaan/{id}/terima', [KonselorPermintaanController::class, 'terima']);
     Route::get('/jadwal-konseling', [KonselorJadwalController::class, 'index']);
-    Route::get('/laporan-konseling',[KonselorLaporanController::class, 'index']);
+    Route::get('/laporan-konseling', [KonselorLaporanController::class, 'index']);
     Route::post('/konselor/laporan/{id}/simpan', [KonselorLaporanController::class, 'simpanLaporan']);
 });
+
+Route::middleware(['auth.custom', 'role:admin'])->group(function () {
+    Route::get('/dashboard-admin', [AdminController::class, 'dashboard']);
+    Route::get('/konselor', [AdminController::class, 'konselor']);
+    Route::post('/konselor', [AdminController::class, 'store'])->name('admin.konselor.store');
+    Route::delete('/admin/konselor/{id}', [AdminController::class, 'delete'])->name('admin.konselor.delete');
+    Route::get('/siswa', [AdminController::class, 'siswa']);
+    Route::post('/siswa', [AdminController::class, 'storeSiswa'])->name('admin.siswa.store');
+    Route::delete('/admin/siswa/{id}', [AdminController::class, 'deleteSiswa'])->name('admin.siswa.delete');
+    Route::put('/admin/konselor/{id}', [AdminController::class, 'update'])->name('admin.konselor.update');
+    Route::get('/konseling', [AdminController::class, 'konseling']);
+});
+
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');

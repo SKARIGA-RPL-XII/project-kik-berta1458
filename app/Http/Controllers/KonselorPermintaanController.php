@@ -15,7 +15,7 @@ class KonselorPermintaanController extends Controller
 
         $data = PengajuanKonseling::with(['siswa', 'kategori'])
             ->when($tanggal, fn($q) => $q->whereDate('tanggal_pengajuan', $tanggal))
-            ->where('status', 'menunggu') 
+            ->where('status', 'menunggu')
             ->orderBy('tanggal_pengajuan', 'asc')
             ->get();
 
@@ -37,7 +37,6 @@ class KonselorPermintaanController extends Controller
         ]);
     }
 
-
     public function terima($id)
     {
         $pengajuan = PengajuanKonseling::findOrFail($id);
@@ -45,20 +44,8 @@ class KonselorPermintaanController extends Controller
         $pengajuan->status = 'dijadwalkan';
         $pengajuan->save();
 
-        $tanggal = $pengajuan->tanggal_pengajuan;
-        $tanggalHariIni = \Carbon\Carbon::now()->toDateString();
-
-        $statusJadwal = ($tanggal == $tanggalHariIni) ? 'berlangsung' : 'dijadwalkan';
-
-        JadwalKonseling::create([
-            'id_pengajuan' => $pengajuan->id,
-            'tanggal_konseling' => $tanggal,
-            'status' => $statusJadwal
-        ]);
-
         return response()->json([
             'success' => true,
-            'status_jadwal' => $statusJadwal,
             'message' => "Pengajuan berhasil diterima!"
         ]);
     }

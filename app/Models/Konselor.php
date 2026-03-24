@@ -15,15 +15,14 @@ class Konselor extends Model
         'nama',
     ];
 
-
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'id_user', 'id');
     }
 
     public function pengajuan()
     {
-        return $this->hasMany(PengajuanKonseling::class);
+        return $this->hasMany(PengajuanKonseling::class, 'id_konselor');
     }
 }
 ?>

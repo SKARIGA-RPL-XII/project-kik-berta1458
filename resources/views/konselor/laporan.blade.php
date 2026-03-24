@@ -52,11 +52,22 @@
                                 <td>{{ \Carbon\Carbon::parse($lap->tanggal_pengajuan)->translatedFormat('d F Y')}}</td>
                                 <td>{{ $lap->siswa->nama }}</td>
                                 <td>{{ $lap->kategori->nama_kategori }}</td>
-                                <td>@if ($lap->status == 'menunggu')<span class="menunggu">Menunggu</span>
-                                    @elseif ($lap->status == 'diterima')<span class="diterima">Diterima</span>
-                                    @elseif ($lap->status == 'ditolak')<span class="ditolak">Ditolak</span>
-                                    @else <span class="selesai">Selesai</span>
-                                    @endif</td>
+                                <td>@if ($lap->status == 'menunggu')
+                                    <span class="menunggu">Menunggu</span>
+
+                                    @elseif ($lap->status == 'ditolak')
+                                    <span class="ditolak">Ditolak</span>
+
+                                    @elseif ($lap->status == 'dijadwalkan')
+                                    <span class="dijadwalkan">Dijadwalkan</span>
+
+                                    @elseif ($lap->status == 'berlangsung')
+                                    <span class="berlangsung">Berlangsung</span>
+
+                                    @elseif ($lap->status == 'selesai')
+                                    <span class="selesai">Selesai</span>
+                                    @endif
+                                </td>
                                 <td>
                                     <button class="detail"
                                         data-deskripsi="{{ $lap->deskripsi_masalah }}">
@@ -70,23 +81,16 @@
                                     </button>
                                     @endif
 
-                                    @if(in_array($lap->status, ['dijadwalkan', 'berlangsung']))
+                                    @if(in_array($lap->status, ['dijadwalkan', 'berlangsung', 'selesai']))
                                     <button class="isi-lap"
                                         data-id="{{ $lap->id }}"
                                         data-nama="{{ $lap->siswa->nama }}"
                                         data-kelas="{{ $lap->siswa->kelas }}"
                                         data-kategori="{{ $lap->kategori->nama_kategori }}"
                                         data-tanggal="{{ $lap->tanggal_pengajuan }}"
-                                        data-permasalahan="{{ $lap->deskripsi_masalah }}">
+                                        data-permasalahan="{{ $lap->deskripsi_masalah }}"
+                                        data-catatan="{{htmlspecialchars($lap->laporan->hasil_catatan ?? '')}}">
                                         <i class="fa-solid fa-pen-to-square"></i>
-                                    </button>
-                                    @endif
-
-
-                                    @if($lap->status === 'selesai')
-                                    <button class="isi-lap-done"
-                                        data-id="{{ $lap->id }}">
-                                        <i class="fa-solid fa-chart-bar"></i>
                                     </button>
                                     @endif
                                 </td>
@@ -151,8 +155,16 @@
                 <tr>
                     <th>Hasil & Catatan</th>
                     <td>
-                        <textarea id="lapCatatan" class="textarea-laporan"
-                            placeholder="Tuliskan hasil dan catatan..."></textarea>
+                        <div class="editor-toolbar">
+                            <button type="button" onclick="formatText('bold')"><b>B</b></button>
+                            <button type="button" onclick="formatText('italic')"><i>I</i></button>
+                            <button type="button" onclick="formatText('underline')"><u>U</u></button>
+                            <button type="button" onclick="formatText('insertUnorderedList')">• List</button>
+                            <button type="button" onclick="formatText('insertOrderedList')">1. List</button>
+                        </div>
+
+                        <div id="lapCatatan" class="textarea-laporan editor" contenteditable="true"
+                            placeholder="Tuliskan hasil dan catatan..."></div>
                     </td>
                 </tr>
             </table>
@@ -162,6 +174,7 @@
         <div class="modal-actions-laporan">
             <button id="closeIsiLap" class="btn-batal-lap">Batal</button>
             <button id="submitIsiLap" class="btn-simpan-lap">Simpan</button>
+            <button id="btnTutupDetailLap" class="btn-tutup-lap" style="display:none;">Tutup</button>
         </div>
 
     </div>
@@ -188,6 +201,12 @@
 @include('layout.footer')
 
 <script>
+    function formatText(command) {
+        document.execCommand(command, false, null);
+    }
+    // =====================
+    // MODAL DETAIL DESKRIPSI
+    // =====================
     document.querySelectorAll('.detail').forEach(btn => {
         btn.addEventListener('click', () => {
             document.getElementById('modalDeskripsi').textContent =
@@ -195,11 +214,16 @@
             document.getElementById('modalDetail').style.display = 'flex';
         });
     });
+
     document.getElementById('closeModalDetail')
         .addEventListener('click', () => {
             document.getElementById('modalDetail').style.display = 'none';
         });
 
+
+    // =====================
+    // MODAL CATATAN (DITOLAK)
+    // =====================
     document.querySelectorAll('.catatan').forEach(btn => {
         btn.addEventListener('click', () => {
             document.getElementById('isiCatatan').textContent =
@@ -213,25 +237,81 @@
             document.getElementById('modalCatatan').style.display = 'none';
         });
 
+
+    // =====================
+    // MODAL ISI / DETAIL LAPORAN
+    // =====================
     document.querySelectorAll('.isi-lap').forEach(btn => {
         btn.addEventListener('click', () => {
+
+            // ambil data
             document.getElementById('lapNama').textContent = btn.dataset.nama;
             document.getElementById('lapKelas').textContent = btn.dataset.kelas;
             document.getElementById('lapTanggal').textContent = btn.dataset.tanggal;
             document.getElementById('lapKategori').textContent = btn.dataset.kategori;
             document.getElementById('lapPermasalahan').textContent = btn.dataset.permasalahan;
 
+            let textarea = document.getElementById('lapCatatan');
+            let btnSimpan = document.getElementById('submitIsiLap');
+            let btnBatal = document.getElementById('closeIsiLap');
+            let btnTutup = document.getElementById('btnTutupDetailLap');
+            let title = document.querySelector('.modal-header-laporan h2');
+
+            // reset default
+            textarea.contentEditable = "true";
+            btnSimpan.style.display = "inline-block";
+            btnBatal.style.display = "inline-block";
+            btnTutup.style.display = "none";
+
+            // kondisi sudah ada laporan
+            if (btn.dataset.catatan && btn.dataset.catatan.trim() !== "") {
+
+                textarea.innerHTML = btn.dataset.catatan;
+                title.textContent = "Detail Laporan";
+
+                textarea.contentEditable = "false";
+
+                btnSimpan.style.display = "none";
+                btnBatal.style.display = "none";
+                btnTutup.style.display = "block"; // tampilkan tombol tutup
+
+            } else {
+                textarea.innerHTML = "";
+                title.textContent = "Laporan Bimbingan Konseling";
+            }
+
+            // set ID untuk simpan
+            btnSimpan.setAttribute("data-current-id", btn.dataset.id);
+
+            // tampilkan modal
             document.getElementById('modalIsiLap').style.display = 'flex';
         });
     });
 
+
+    // =====================
+    // BUTTON TUTUP (KHUSUS DETAIL)
+    // =====================
+    document.getElementById('btnTutupDetailLap').addEventListener('click', () => {
+        document.getElementById('modalIsiLap').style.display = 'none';
+    });
+
+
+    // =====================
+    // BUTTON BATAL
+    // =====================
     document.getElementById('closeIsiLap').addEventListener('click', () => {
         document.getElementById('modalIsiLap').style.display = 'none';
     });
 
+
+    // =====================
+    // SUBMIT SIMPAN LAPORAN
+    // =====================
     document.getElementById('submitIsiLap').addEventListener('click', function() {
-        let id = document.querySelector('.isi-lap').dataset.id;
-        let catatan = document.getElementById('lapCatatan').value.trim();
+
+        let id = this.getAttribute("data-current-id");
+        let catatan = document.getElementById('lapCatatan').innerHTML.trim();
 
         if (!catatan) {
             alert("Catatan wajib diisi");
