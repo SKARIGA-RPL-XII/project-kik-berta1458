@@ -14,6 +14,7 @@ class LaporanKonseling extends Model
     protected $fillable = [
         'id_pengajuan',
         'hasil_catatan',
+        'bukti_foto',
         'pesan_siswa'
     ];
 

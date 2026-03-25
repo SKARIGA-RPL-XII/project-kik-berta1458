@@ -15,7 +15,8 @@ class KonselorLaporanController extends Controller
             ->whereDate('tanggal_pengajuan', Carbon::today())
             ->update(['status' => 'berlangsung']);
 
-        $laporan = PengajuanKonseling::with(['siswa','kategori','laporan'])
+        $laporan = PengajuanKonseling::with(['siswa', 'kategori', 'laporan'])
+            ->whereIn('status', ['berlangsung', 'selesai', 'ditolak', 'dijadwalkan'])
             ->orderBy('tanggal_pengajuan', 'desc')
             ->get();
 
@@ -24,22 +25,41 @@ class KonselorLaporanController extends Controller
 
     public function simpanLaporan(Request $request, $id)
     {
-        $request->validate([
-            'hasil_catatan' => 'required|string',
-        ]);
+        try {
 
-        LaporanKonseling::create([
-            'id_pengajuan' => $id,
-            'hasil_catatan' => $request->hasil_catatan,
-        ]);
+            $request->validate([
+                'hasil_catatan' => 'required',
+                'bukti_foto' => 'required',
+                'pesan_siswa' => 'nullable',
+            ]);
 
-        $pengajuan = PengajuanKonseling::findOrFail($id);
-        $pengajuan->status = 'selesai';
-        $pengajuan->save();
+            $hasil = $request->input('hasil_catatan');
+            $foto  = $request->input('bukti_foto');
+            $pesan = $request->input('pesan_siswa');
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Laporan berhasil disimpan!',
-        ]);
+            LaporanKonseling::updateOrCreate(
+                ['id_pengajuan' => $id],
+                [
+                    'hasil_catatan' => $hasil,
+                    'bukti_foto'    => $foto,
+                    'pesan_siswa'   => $pesan
+                ]
+            );
+
+            $pengajuan = PengajuanKonseling::findOrFail($id);
+            $pengajuan->status = 'selesai';
+            $pengajuan->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Laporan berhasil disimpan!',
+            ]);
+        } catch (\Exception $e) {
+
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 }

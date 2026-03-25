@@ -10,7 +10,9 @@ class KonselorJadwalController extends Controller
     public function index()
     {
         $jadwal = JadwalKonseling::with(['pengajuan.siswa', 'pengajuan.kategori'])
-            ->whereIn('status', ['dijadwalkan', 'berlangsung'])
+            ->whereHas('pengajuan', function ($query) {
+                $query->whereIn('status', ['dijadwalkan', 'berlangsung']);
+            })
             ->orderBy('tanggal_konseling', 'asc')
             ->get();
 

@@ -11,28 +11,28 @@ class KonselorDashboardController extends Controller
 {
     public function index()
     {
-        $tahun = Carbon::now()->year;
-
-        $permintaanBaru = PengajuanKonseling::whereYear('created_at', $tahun)
-            ->where('status', 'menunggu')
+        $permintaanBaru = PengajuanKonseling::where('status', 'menunggu')
+            ->whereYear('tanggal_pengajuan', Carbon::now()->year)
             ->count();
-
-        $konselingAktif = JadwalKonseling::whereYear('tanggal_konseling', $tahun)
-            ->where('status', 'berlangsung')
+        $konselingAktif = PengajuanKonseling::whereIn('status', ['dijadwalkan', 'berlangsung'])
+            ->whereYear('tanggal_pengajuan', Carbon::now()->year)
             ->count();
-
-        $konselingSelesai = JadwalKonseling::whereYear('tanggal_konseling', $tahun)
-            ->where('status', 'selesai')
+        $konselingSelesai = PengajuanKonseling::where('status', 'selesai')
+            ->whereYear('tanggal_pengajuan', Carbon::now()->year)
             ->count();
-
-        $jadwalHighlight = JadwalKonseling::whereIn('status', ['dijadwalkan', 'berlangsung'])
+        $jadwalHighlight = JadwalKonseling::whereHas('pengajuan', function ($q) {
+            $q->whereIn('status', ['dijadwalkan', 'berlangsung']);
+        })
             ->pluck('tanggal_konseling')
             ->map(fn($tgl) => \Carbon\Carbon::parse($tgl)->format('Y-m-d'))
             ->toArray();
-
-        $jadwalHariIni = JadwalKonseling::with(['pengajuan.siswa'])
+        $jadwalHariIni = JadwalKonseling::with(['pengajuan.siswa', 'pengajuan.kategori'])
             ->whereDate('tanggal_konseling', Carbon::today())
+            ->whereHas('pengajuan', function ($q) {
+                $q->where('status', 'berlangsung');
+            })
             ->get();
+
         return view('konselor.dashboard', compact(
             'permintaanBaru',
             'konselingAktif',
@@ -42,4 +42,3 @@ class KonselorDashboardController extends Controller
         ));
     }
 }
-?>

@@ -14,7 +14,7 @@ class JadwalKonselingSeeder extends Seeder
 
         JadwalKonseling::create([
             'id_pengajuan'     => $pengajuan->id,
-            'tanggal_konseling'=> now()->addDays(2),
+            'tanggal_konseling'=> now()->addDays(3),
             'status'           => 'dijadwalkan',
         ]);
     }

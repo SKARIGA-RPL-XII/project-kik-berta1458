@@ -724,6 +724,27 @@ table .berlangsung {
     padding: 10px;
 }
 
+.kamera-wrap video {
+    width: 100%;
+    max-height: 200px;
+    background: black;
+}
+
+.kamera-btn {
+    margin-top: 10px;
+    display: flex;
+    gap: 10px;
+}
+
+.kamera-btn button {
+    padding: 6px 12px;
+    cursor: pointer;
+    border: none;
+    background: #00244B;
+    color: #ffffff;
+    border-radius: 10px;
+}
+
 /* pengajuan */
 .pengajuan {
     margin-top: 150px;
@@ -1219,7 +1240,8 @@ button.tutup {
     width: 450px;
     background: white;
     border-radius: 10px;
-    overflow: hidden;
+    overflow-y: auto;
+    max-height: 90vh;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
     padding: 30px 30px 20px;
 }

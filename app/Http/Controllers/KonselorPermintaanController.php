@@ -44,6 +44,11 @@ class KonselorPermintaanController extends Controller
         $pengajuan->status = 'dijadwalkan';
         $pengajuan->save();
 
+        JadwalKonseling::create([
+            'id_pengajuan' => $pengajuan->id,
+            'tanggal_konseling' => $pengajuan->tanggal_pengajuan, // atau field lain kalau ada
+        ]);
+        
         return response()->json([
             'success' => true,
             'message' => "Pengajuan berhasil diterima!"

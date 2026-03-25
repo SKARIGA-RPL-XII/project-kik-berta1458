@@ -89,7 +89,9 @@
                                         data-kategori="{{ $lap->kategori->nama_kategori }}"
                                         data-tanggal="{{ $lap->tanggal_pengajuan }}"
                                         data-permasalahan="{{ $lap->deskripsi_masalah }}"
-                                        data-catatan="{{htmlspecialchars($lap->laporan->hasil_catatan ?? '')}}">
+                                        data-foto="{{ $lap->laporan->bukti_foto ?? '' }}"
+                                        data-catatan="{{ urlencode($lap->laporan->hasil_catatan ?? '') }}"
+                                        data-pesan="{{ urlencode($lap->laporan->pesan_siswa ?? '') }}">
                                         <i class="fa-solid fa-pen-to-square"></i>
                                     </button>
                                     @endif
@@ -153,17 +155,58 @@
                     <td id="lapPermasalahan"></td>
                 </tr>
                 <tr>
-                    <th>Hasil & Catatan</th>
+                    <th>Bukti Konseling</th>
+                    <td>
+                        <div class="kamera-wrap">
+
+                            <video id="cameraPreview" autoplay></video>
+
+                            <canvas id="cameraCanvas" style="display:none;"></canvas>
+                            <img id="hasilFoto" style="display:none; width:100%; margin-top:10px;" />
+
+                            <div class="kamera-btn">
+                                <button type="button" id="btnStartCamera">Buka Kamera</button>
+                                <button type="button" id="btnAmbilFoto">Ambil Foto</button>
+                            </div>
+
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Hasil</th>
                     <td>
                         <div class="editor-toolbar">
                             <button type="button" onclick="formatText('bold')"><b>B</b></button>
                             <button type="button" onclick="formatText('italic')"><i>I</i></button>
                             <button type="button" onclick="formatText('underline')"><u>U</u></button>
-                            <button type="button" onclick="formatText('insertUnorderedList')">• List</button>
-                            <button type="button" onclick="formatText('insertOrderedList')">1. List</button>
+                            <button type="button" onclick="formatText('insertUnorderedList')">
+                                <i class="fa-solid fa-list"></i>
+                            </button>
+                            <button type="button" onclick="formatText('insertOrderedList')">
+                                <i class="fa-solid fa-list-ol"></i>
+                            </button>
                         </div>
 
                         <div id="lapCatatan" class="textarea-laporan editor" contenteditable="true"
+                            placeholder="Tuliskan hasil dan catatan..."></div>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Catatan</th>
+                    <td>
+                        <div class="editor-toolbar">
+                            <button type="button" onclick="formatTextPesan('bold')"><b>B</b></button>
+                            <button type="button" onclick="formatTextPesan('italic')"><i>I</i></button>
+                            <button type="button" onclick="formatTextPesan('underline')"><u>U</u></button>
+                            <button type="button" onclick="formatTextPesan('insertUnorderedList')">
+                                <i class="fa-solid fa-list"></i>
+                            </button>
+                            <button type="button" onclick="formatTextPesan('insertOrderedList')">
+                                <i class="fa-solid fa-list-ol"></i>
+                            </button>
+                        </div>
+
+                        <div id="pesanSiswa" class="textarea-laporan editor" contenteditable="true"
                             placeholder="Tuliskan hasil dan catatan..."></div>
                     </td>
                 </tr>
@@ -201,12 +244,13 @@
 @include('layout.footer')
 
 <script>
+    // text editor
     function formatText(command) {
         document.execCommand(command, false, null);
     }
-    // =====================
-    // MODAL DETAIL DESKRIPSI
-    // =====================
+
+
+    // modal deskripsi
     document.querySelectorAll('.detail').forEach(btn => {
         btn.addEventListener('click', () => {
             document.getElementById('modalDeskripsi').textContent =
@@ -221,9 +265,7 @@
         });
 
 
-    // =====================
-    // MODAL CATATAN (DITOLAK)
-    // =====================
+    // modal penolakan
     document.querySelectorAll('.catatan').forEach(btn => {
         btn.addEventListener('click', () => {
             document.getElementById('isiCatatan').textContent =
@@ -238,13 +280,10 @@
         });
 
 
-    // =====================
-    // MODAL ISI / DETAIL LAPORAN
-    // =====================
+    // modal isi laporan
     document.querySelectorAll('.isi-lap').forEach(btn => {
         btn.addEventListener('click', () => {
 
-            // ambil data
             document.getElementById('lapNama').textContent = btn.dataset.nama;
             document.getElementById('lapKelas').textContent = btn.dataset.kelas;
             document.getElementById('lapTanggal').textContent = btn.dataset.tanggal;
@@ -257,81 +296,161 @@
             let btnTutup = document.getElementById('btnTutupDetailLap');
             let title = document.querySelector('.modal-header-laporan h2');
 
-            // reset default
+            let img = document.getElementById('hasilFoto');
+            let video = document.getElementById('cameraPreview');
+            let btnStart = document.getElementById('btnStartCamera');
+            let btnAmbil = document.getElementById('btnAmbilFoto');
+
+            let pesanEl = document.getElementById('pesanSiswa');
+
+            if (btn.dataset.pesan && btn.dataset.pesan.trim() !== "") {
+                pesanEl.innerHTML = decodeURIComponent(btn.dataset.pesan);
+                pesanEl.contentEditable = "false";
+            } else {
+                pesanEl.innerHTML = "";
+                pesanEl.contentEditable = "true";
+            }
+
+            // reset
+            img.style.display = "none";
+            video.style.display = "block";
+            btnStart.style.display = "inline-block";
+            btnAmbil.style.display = "inline-block";
+
             textarea.contentEditable = "true";
             btnSimpan.style.display = "inline-block";
             btnBatal.style.display = "inline-block";
             btnTutup.style.display = "none";
 
-            // kondisi sudah ada laporan
+            // detail
             if (btn.dataset.catatan && btn.dataset.catatan.trim() !== "") {
 
-                textarea.innerHTML = btn.dataset.catatan;
+                textarea.innerHTML = decodeURIComponent(btn.dataset.catatan);
                 title.textContent = "Detail Laporan";
 
                 textarea.contentEditable = "false";
 
                 btnSimpan.style.display = "none";
                 btnBatal.style.display = "none";
-                btnTutup.style.display = "block"; // tampilkan tombol tutup
+                btnTutup.style.display = "block";
+
+                if (btn.dataset.foto) {
+                    img.src = btn.dataset.foto;
+                    img.style.display = "block";
+
+                    video.style.display = "none";
+                    btnStart.style.display = "none";
+                    btnAmbil.style.display = "none";
+                }
 
             } else {
                 textarea.innerHTML = "";
                 title.textContent = "Laporan Bimbingan Konseling";
             }
 
-            // set ID untuk simpan
             btnSimpan.setAttribute("data-current-id", btn.dataset.id);
 
-            // tampilkan modal
             document.getElementById('modalIsiLap').style.display = 'flex';
         });
     });
 
 
-    // =====================
-    // BUTTON TUTUP (KHUSUS DETAIL)
-    // =====================
+    // tutup
     document.getElementById('btnTutupDetailLap').addEventListener('click', () => {
         document.getElementById('modalIsiLap').style.display = 'none';
     });
 
-
-    // =====================
-    // BUTTON BATAL
-    // =====================
     document.getElementById('closeIsiLap').addEventListener('click', () => {
         document.getElementById('modalIsiLap').style.display = 'none';
     });
 
 
-    // =====================
-    // SUBMIT SIMPAN LAPORAN
-    // =====================
+    // submit
     document.getElementById('submitIsiLap').addEventListener('click', function() {
 
         let id = this.getAttribute("data-current-id");
         let catatan = document.getElementById('lapCatatan').innerHTML.trim();
+        let foto = document.getElementById('hasilFoto').src || null;
+
+        let pesan = document.getElementById('pesanSiswa') ?
+            document.getElementById('pesanSiswa').innerHTML :
+            '';
 
         if (!catatan) {
             alert("Catatan wajib diisi");
             return;
         }
 
+        if (!foto || !foto.startsWith("data:image")) {
+            alert("Foto wajib diambil");
+            return;
+        }
+
+        let formData = new FormData();
+        formData.append('hasil_catatan', catatan);
+        formData.append('bukti_foto', foto);
+        formData.append('pesan_siswa', pesan);
+
+        formData.append('_token', '{{ csrf_token() }}');
+
         fetch(`/konselor/laporan/${id}/simpan`, {
                 method: 'POST',
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRF-TOKEN": "{{ csrf_token() }}"
-                },
-                body: JSON.stringify({
-                    hasil_catatan: catatan
-                })
+                body: formData
             })
-            .then(res => res.json())
+            .then(async res => {
+                let data = await res.json();
+                if (!res.ok) throw data;
+                return data;
+            })
             .then(result => {
                 alert(result.message);
                 location.reload();
+            })
+            .catch(err => {
+                console.error("ERROR:", err);
+                alert(err.message || "Terjadi error!");
             });
+    });
+
+
+    // kamera
+    let stream = null;
+
+    document.getElementById('btnStartCamera').addEventListener('click', async () => {
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({
+                video: true
+            });
+            document.getElementById('cameraPreview').srcObject = stream;
+        } catch (err) {
+            alert("Tidak bisa akses kamera");
+        }
+    });
+
+    document.getElementById('btnAmbilFoto').addEventListener('click', () => {
+        let video = document.getElementById('cameraPreview');
+        let canvas = document.getElementById('cameraCanvas');
+        let img = document.getElementById('hasilFoto');
+        let btnStart = document.getElementById('btnStartCamera');
+        let btnAmbil = document.getElementById('btnAmbilFoto');
+
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+
+        let ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0);
+
+        let dataURL = canvas.toDataURL("image/png");
+
+        img.src = dataURL;
+        img.style.display = "block";
+
+        video.style.display = "none";
+        btnStart.style.display = "none";
+        btnAmbil.style.display = "none";
+
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+        }
     });
 </script>
