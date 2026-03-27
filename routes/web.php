@@ -44,6 +44,7 @@ Route::middleware(['auth.custom', 'role:admin'])->group(function () {
     Route::delete('/admin/siswa/{id}', [AdminController::class, 'deleteSiswa'])->name('admin.siswa.delete');
     Route::put('/admin/konselor/{id}', [AdminController::class, 'update'])->name('admin.konselor.update');
     Route::get('/konseling', [AdminController::class, 'konseling']);
+    Route::post('/admin/konseling/store', [AdminController::class, 'storeKonseling']);
 });
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');

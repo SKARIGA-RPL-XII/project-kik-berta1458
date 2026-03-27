@@ -115,6 +115,8 @@
         </div>
     </div>
 </section>
+
+<!-- modal deskripsi -->
 <div id="modalDetail" class="modal-overlay">
     <div class="modal-box">
         <div class="modal-header">
@@ -130,6 +132,8 @@
         </div>
     </div>
 </div>
+
+<!-- modal laporan -->
 <div id="modalIsiLap" class="modal-overlay" style="display:none;">
     <div class="modal-box modal-laporan">
 

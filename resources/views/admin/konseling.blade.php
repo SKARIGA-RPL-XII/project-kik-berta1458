@@ -4,14 +4,14 @@
     <div class="container">
 
         <div class="title-body">
-            <h3>Kelola Konselor</h3>
-            <p>Tambah dan kelola akun konselor</p>
+            <h3>Kelola Konseling</h3>
+            <p>Tambah dan kelola laporan konseling</p>
         </div>
         <div class="row">
             <div class="col-md-12">
                 <div class="search-tambah">
-                    <button class="btn-tambah-konselor" id="openModal">
-                        + Tambah Konselor
+                    <button class="btn-tambah-admin" id="openModalKonseling">
+                        + Tambah Konseling
                     </button>
                     <input class="search" type="text" placeholder="Cari...">
                 </div>
@@ -96,21 +96,21 @@
 </section>
 
 
-<!-- MODAL EDIT KONSELOR -->
-<div class="modal-overlay" id="modalEditKonselor" style="display:none;">
+<!-- modal edit konseling -->
+<div class="modal-overlay" id="modalEditKonseling" style="display:none;">
     <div class="modal-box modal-admin">
 
         <div class="title-body-tambah">
-            <h3>Edit Konselor</h3>
+            <h3>Edit Konseling</h3>
         </div>
 
         <div class="form-tambah">
 
-            <form id="formEditKonselor" method="POST">
+            <form id="formEditKonseling" method="POST">
                 @csrf
                 @method('PUT')
 
-                <label>Nama Konselor</label><br>
+                <label>Tanggal Konseling</label><br>
                 <input type="text" name="nama" id="editNama" required>
                 <br><br>
 
@@ -173,5 +173,110 @@
     </div>
 </div>
 
+<!-- modal deskripsi -->
+<div id="modalDetail" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h2>Deskripsi Singkat Permasalahan</h2>
+        </div>
+
+        <div class="modal-content">
+            <p id="modalDeskripsi"></p>
+        </div>
+
+        <div class="modal-actions">
+            <button id="closeModalDetail">Tutup</button>
+        </div>
+    </div>
+</div>
+<div class="modal-overlay" id="modalTambahKonseling" style="display:none;">
+    <div class="modal-box modal-admin">
+
+        <h3>Tambah Konseling</h3>
+
+        <form id="formTambahKonseling">
+            @csrf
+
+            <label>Siswa</label><br>
+            <select name="id_siswa" required>
+                @foreach($siswa as $s)
+                <option value="{{ $s->id }}">{{ $s->nama }}</option>
+                @endforeach
+            </select>
+            <br><br>
+            <label>Kategori</label><br>
+            <select name="id_kategori" required>
+                @foreach($kategori as $k)
+                <option value="{{ $k->id }}">{{ $k->nama_kategori }}</option>
+                @endforeach
+            </select>
+            <br><br>
+
+            <label>Tanggal</label><br>
+            <input type="date" name="tanggal_pengajuan" required>
+            <br><br>
+            <label>Deskripsi (opsional)</label><br>
+            <textarea name="deskripsi_masalah"></textarea>
+            <br><br>
+            <div class="modal-actions">
+                <button type="button" id="closeTambahKonseling" class="btn-batal">Batal</button>
+                <button type="submit" class="btn-kirim">Simpan</button>
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
 
 @include('layout.footer')
+
+
+<script>
+    // modal tambah konseling
+    document.getElementById('openModalKonseling').addEventListener('click', () => {
+        document.getElementById('modalTambahKonseling').style.display = 'flex';
+    });
+
+    document.getElementById('closeTambahKonseling').addEventListener('click', () => {
+        document.getElementById('modalTambahKonseling').style.display = 'none';
+    });
+
+    // submit form
+    document.getElementById('formTambahKonseling').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        let formData = new FormData(this);
+
+        fetch('/admin/konseling/store', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(result => {
+                alert(result.message);
+                location.reload();
+            })
+            .catch(err => {
+                console.error(err);
+                alert("Gagal tambah konseling");
+            });
+    });
+
+    // modal deskripsi
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.detail').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.getElementById('modalDeskripsi').textContent =
+                    btn.dataset.deskripsi;
+                document.getElementById('modalDetail').style.display = 'flex';
+            });
+        });
+
+
+        document.getElementById('closeModalDetail')
+            .addEventListener('click', () => {
+                document.getElementById('modalDetail').style.display = 'none';
+            });
+    });
+</script>

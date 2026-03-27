@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Konselor;
+use App\Models\KategoriPermasalahan;
 use App\Models\Siswa;
 use App\Models\PengajuanKonseling;
 use Carbon\Carbon;
@@ -141,10 +142,34 @@ class AdminController extends Controller
             ->whereDate('tanggal_pengajuan', Carbon::today())
             ->update(['status' => 'berlangsung']);
 
-        $laporan = PengajuanKonseling::with(['siswa', 'kategori'])
+        $laporan = PengajuanKonseling::with(['siswa', 'kategori', 'laporan'])
             ->orderBy('tanggal_pengajuan', 'desc')
             ->get();
 
-        return view('admin.konseling', compact('laporan'));
+        $siswa = Siswa::all();
+        $kategori = KategoriPermasalahan::all();
+
+        return view('admin.konseling', compact('laporan', 'siswa', 'kategori'));
+    }
+    public function storeKonseling(Request $request)
+    {
+        $request->validate([
+            'id_siswa' => 'required',
+            'id_kategori' => 'required',
+            'tanggal_pengajuan' => 'required|date',
+        ]);
+
+        PengajuanKonseling::create([
+            'id_siswa' => $request->id_siswa,
+            'id_kategori' => $request->id_kategori,
+            'tanggal_pengajuan' => $request->tanggal_pengajuan,
+            'deskripsi_masalah' => $request->deskripsi_masalah ?? '-',
+            'status' => 'dijadwalkan'
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Konseling berhasil ditambahkan'
+        ]);
     }
 }

@@ -24,6 +24,7 @@
                     <tr>
                         <th>Nama</th>
                         <th>NIP</th>
+                        <th>Password</th>
                         <th>Aksi</th>
                     </tr>
                 </thead>
@@ -32,6 +33,7 @@
                     <tr>
                         <td>{{ $k->nama }}</td>
                         <td>{{ $k->nip }}</td>
+                        <td>p</td>
                         <td>
                             <button
                                 class="aksi-admin edit"

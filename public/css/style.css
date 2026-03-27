@@ -506,11 +506,11 @@ button.logout {
     ;
 }
 
-.modal-header-laporan h2 {
+.modal-header-laporan h2, .modal-admin h3 {
     color: #5A0010;
     background: #5A00101A;
     padding: 5px;
-    width: 40%;
+    width: 42%;
     margin: 0 auto;
     font-size: 18px;
     font-weight: 600;
@@ -1730,7 +1730,7 @@ button.tutup {
     gap: 10px;
 }
 
-button.btn-tambah-konselor#openModal {
+button.btn-tambah-konselor#openModal, .btn-tambah-admin {
     border: none;
     background: #00244B;
     color: #ffffff;
@@ -1741,7 +1741,7 @@ button.btn-tambah-konselor#openModal {
     width: 30%;
 }
 
-.form-tambah input {
+.form-tambah input, #formTambahKonseling input, #formTambahKonseling select, #formTambahKonseling textarea {
     border: 1px solid #D0D3D9;
     background: #FFFFFF;
     border-radius: 10px;
