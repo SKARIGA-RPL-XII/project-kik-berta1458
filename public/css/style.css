@@ -1301,7 +1301,7 @@ button.tutup {
 }
 
 .btn-batal,
-.btn-kirim {
+.btn-kirim, .modal-actions button {
     background: #002B5B;
     color: white;
     padding: 10px 28px;
@@ -1741,7 +1741,7 @@ button.btn-tambah-konselor#openModal, .btn-tambah-admin {
     width: 30%;
 }
 
-.form-tambah input, #formTambahKonseling input, #formTambahKonseling select, #formTambahKonseling textarea {
+.form-tambah input, #formTambahKonseling input, #formTambahKonseling select, #formTambahKonseling textarea, .modal-admin input, .modal-admin select, .modal-admin textarea {
     border: 1px solid #D0D3D9;
     background: #FFFFFF;
     border-radius: 10px;

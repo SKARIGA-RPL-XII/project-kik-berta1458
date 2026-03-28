@@ -71,7 +71,8 @@
                                 data-kelas="{{ $lap->siswa->kelas }}"
                                 data-kategori="{{ $lap->kategori->nama_kategori }}"
                                 data-tanggal="{{ $lap->tanggal_pengajuan }}"
-                                data-permasalahan="{{ $lap->deskripsi_masalah }}">
+                                data-permasalahan="{{ $lap->deskripsi_masalah }}"
+                                data-hasil="{{ $lap->laporan->hasil_catatan ?? '' }}">
                                 <i class="fa-solid fa-pen-to-square"></i>
                             </button>
                             @endif
@@ -95,6 +96,35 @@
     </div>
 </section>
 
+<div class="modal-overlay" id="modalLaporan" style="display:none;">
+    <div class="modal-box modal-admin">
+
+        <h3>Laporan Konseling</h3>
+
+        <input type="hidden" id="laporanId">
+
+        <label>Nama Siswa</label><br>
+        <input type="text" id="namaSiswa" readonly>
+        <br><br>
+        <label>Kelas</label><br>
+        <input type="text" id="kelasSiswa" readonly>
+        <br><br>
+        <label>Kategori</label><br>
+        <input type="text" id="kategori" readonly>
+        <br><br>
+        <label>Permasalahan</label><br>
+        <textarea id="permasalahan" readonly></textarea>
+        <br><br>
+        <label>Hasil Laporan</label><br>
+        <textarea id="hasilLaporan"></textarea>
+        <br><br>
+        <div class="modal-actions">
+            <button type="button" id="closeModalLaporan">Batal</button>
+            <button type="button" id="btnAksiLaporan">Simpan</button>
+        </div>
+
+    </div>
+</div>
 
 <!-- modal edit konseling -->
 <div class="modal-overlay" id="modalEditKonseling" style="display:none;">
@@ -123,53 +153,13 @@
                 <br><br>
 
                 <div class="modal-actions">
-                    <button type="button" id="closeEditModal" class="btn-batal">
-                        Batal
-                    </button>
-                    <button type="submit" class="btn-kirim">
-                        Update
-                    </button>
+                    <button type="button" id="closeEditModal">Batal</button>
+                    <button type="submit">Update</button>
                 </div>
-
-            </form>
-
-        </div>
-    </div>
-</div>
-
-<div class="modal-overlay" id="modalKonselor">
-    <div class="modal-box modal-admin">
-
-        <div class="title-body-tambah">
-            <h3>Tambah Konseling</h3>
         </div>
 
-        <div class="form-tambah">
+        </form>
 
-            <form action="{{ route('admin.konselor.store') }}" method="POST">
-                @csrf
-
-                <label>Nama Konselor</label><br>
-                <input type="text" name="nama" required>
-                <br><br>
-                <label>NIP</label><br>
-                <input type="text" name="nip" required>
-                <br><br>
-                <label>Password</label><br>
-                <input type="password" name="password" required>
-
-                <div class="modal-actions">
-                    <button type="button" id="closeModal" class="btn-batal">
-                        Batal
-                    </button>
-                    <button type="submit" class="btn-kirim">
-                        Simpan
-                    </button>
-                </div>
-
-            </form>
-
-        </div>
     </div>
 </div>
 
@@ -189,6 +179,8 @@
         </div>
     </div>
 </div>
+
+<!-- modal tambah konseling -->
 <div class="modal-overlay" id="modalTambahKonseling" style="display:none;">
     <div class="modal-box modal-admin">
 
@@ -278,5 +270,78 @@
             .addEventListener('click', () => {
                 document.getElementById('modalDetail').style.display = 'none';
             });
+    });
+
+    // laporan
+    let modeLaporan = 'create'; // create | view | edit
+
+    document.querySelectorAll('.isi-lap').forEach(btn => {
+        btn.addEventListener('click', () => {
+
+            let hasil = btn.dataset.hasil;
+
+            document.getElementById('modalLaporan').style.display = 'flex';
+
+            document.getElementById('laporanId').value = btn.dataset.id;
+            document.getElementById('namaSiswa').value = btn.dataset.nama;
+            document.getElementById('kelasSiswa').value = btn.dataset.kelas;
+            document.getElementById('kategori').value = btn.dataset.kategori;
+            document.getElementById('permasalahan').value = btn.dataset.permasalahan;
+
+            let textarea = document.getElementById('hasilLaporan');
+            let btnAksi = document.getElementById('btnAksiLaporan');
+
+            if (hasil && hasil.trim() !== '') {
+                modeLaporan = 'view';
+                textarea.value = hasil;
+                textarea.setAttribute('readonly', true);
+                btnAksi.textContent = 'Edit';
+            } else {
+                modeLaporan = 'create';
+                textarea.value = '';
+                textarea.removeAttribute('readonly');
+                btnAksi.textContent = 'Simpan';
+            }
+
+        });
+    });
+
+    document.getElementById('closeModalLaporan').addEventListener('click', () => {
+        document.getElementById('modalLaporan').style.display = 'none';
+    });
+
+    document.getElementById('btnAksiLaporan').addEventListener('click', function() {
+
+        let textarea = document.getElementById('hasilLaporan');
+
+        if (modeLaporan === 'view') {
+            modeLaporan = 'edit';
+            textarea.removeAttribute('readonly');
+            this.textContent = 'Update';
+            textarea.focus();
+            return;
+        }
+
+        let formData = new FormData();
+        formData.append('id_pengajuan', document.getElementById('laporanId').value);
+        formData.append('hasil_catatan', textarea.value);
+
+        fetch('/admin/laporan/simpan', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: formData
+            })
+            .then(res => res.json())
+            .then(res => {
+                alert(res.message);
+                location.reload();
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Gagal simpan laporan');
+            });
+
     });
 </script>

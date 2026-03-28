@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Konselor;
 use App\Models\KategoriPermasalahan;
 use App\Models\Siswa;
+use App\Models\LaporanKonseling;
 use App\Models\PengajuanKonseling;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -170,6 +171,30 @@ class AdminController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Konseling berhasil ditambahkan'
+        ]);
+    }
+    public function simpanLaporan(Request $request)
+    {
+        $request->validate([
+            'id_pengajuan' => 'required',
+            'hasil_catatan' => 'required'
+        ]);
+
+        $laporan = LaporanKonseling::where('id_pengajuan', $request->id_pengajuan)->first();
+
+        if ($laporan) {
+            $laporan->update([
+                'hasil_catatan' => $request->hasil_catatan
+            ]);
+        } else {
+            LaporanKonseling::create([
+                'id_pengajuan' => $request->id_pengajuan,
+                'hasil_catatan' => $request->hasil_catatan
+            ]);
+        }
+
+        return response()->json([
+            'message' => 'Laporan berhasil disimpan'
         ]);
     }
 }
