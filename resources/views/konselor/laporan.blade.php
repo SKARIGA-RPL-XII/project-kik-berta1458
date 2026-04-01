@@ -177,7 +177,7 @@
                     </td>
                 </tr>
                 <tr>
-                    <th>Hasil</th>
+                    <th>Hasil Konseling</th>
                     <td>
                         <div class="editor-toolbar">
                             <button type="button" onclick="formatText('bold')"><b>B</b></button>
@@ -227,7 +227,7 @@
     </div>
 </div>
 
-
+<!-- modal penolakan -->
 <div id="modalCatatan" class="modal-overlay">
     <div class="modal-box">
         <div class="modal-header">

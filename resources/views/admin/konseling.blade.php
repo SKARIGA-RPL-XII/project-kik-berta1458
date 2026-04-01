@@ -72,7 +72,9 @@
                                 data-kategori="{{ $lap->kategori->nama_kategori }}"
                                 data-tanggal="{{ $lap->tanggal_pengajuan }}"
                                 data-permasalahan="{{ $lap->deskripsi_masalah }}"
-                                data-hasil="{{ $lap->laporan->hasil_catatan ?? '' }}">
+                                data-hasil="{{ $lap->laporan->hasil_catatan ?? '' }}"
+                                data-foto="{{ $lap->laporan->foto ?? '' }}"
+                                data-pesan="{{ $lap->laporan->pesan_siswa ?? '' }}">
                                 <i class="fa-solid fa-pen-to-square"></i>
                             </button>
                             @endif
@@ -96,69 +98,95 @@
     </div>
 </section>
 
-<div class="modal-overlay" id="modalLaporan" style="display:none;">
-    <div class="modal-box modal-admin">
+<!-- modal laporan -->
+<!-- modal laporan -->
+<div id="modalIsiLap" class="modal-overlay" style="display:none;">
+    <div class="modal-box modal-laporan">
 
-        <h3>Laporan Konseling</h3>
+        <div class="modal-header-laporan">
+            <h2>Laporan Bimbingan Konseling</h2>
+        </div>
 
+        <!-- WAJIB -->
         <input type="hidden" id="laporanId">
 
-        <label>Nama Siswa</label><br>
-        <input type="text" id="namaSiswa" readonly>
-        <br><br>
-        <label>Kelas</label><br>
-        <input type="text" id="kelasSiswa" readonly>
-        <br><br>
-        <label>Kategori</label><br>
-        <input type="text" id="kategori" readonly>
-        <br><br>
-        <label>Permasalahan</label><br>
-        <textarea id="permasalahan" readonly></textarea>
-        <br><br>
-        <label>Hasil Laporan</label><br>
-        <textarea id="hasilLaporan"></textarea>
-        <br><br>
-        <div class="modal-actions">
-            <button type="button" id="closeModalLaporan">Batal</button>
-            <button type="button" id="btnAksiLaporan">Simpan</button>
+        <div class="modal-content-laporan">
+
+            <div class="identitas-lap">
+                <p><span>Nama</span> : <span id="lapNama"></span></p>
+                <p><span>Kelas</span> : <span id="lapKelas"></span></p>
+                <p><span>Tgl. Konseling</span> : <span id="lapTanggal"></span></p>
+            </div>
+
+            <table class="table-laporan">
+                <tr>
+                    <th>Kategori</th>
+                    <td id="lapKategori"></td>
+                </tr>
+                <tr>
+                    <th>Permasalahan</th>
+                    <td id="lapPermasalahan"></td>
+                </tr>
+
+                <!-- KAMERA -->
+                <tr>
+                    <th>Bukti Konseling</th>
+                    <td>
+                        <div class="kamera-wrap">
+
+                            <video id="cameraPreview" autoplay></video>
+
+                            <canvas id="cameraCanvas" style="display:none;"></canvas>
+                            <img id="hasilFoto" style="display:none; width:100%; margin-top:10px;" />
+
+                            <div class="kamera-btn">
+                                <button type="button" id="btnStartCamera">Buka Kamera</button>
+                                <button type="button" id="btnAmbilFoto">Ambil Foto</button>
+                            </div>
+
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- HASIL -->
+                <tr>
+                    <th>Hasil Konseling</th>
+                    <td>
+                        <div class="editor-toolbar">
+                            <button type="button" onclick="formatText('bold')"><b>B</b></button>
+                            <button type="button" onclick="formatText('italic')"><i>I</i></button>
+                            <button type="button" onclick="formatText('underline')"><u>U</u></button>
+                        </div>
+
+                        <div id="lapCatatan" class="textarea-laporan editor"
+                            contenteditable="true"
+                            data-placeholder="Tuliskan hasil konseling..."></div>
+                    </td>
+                </tr>
+
+                <!-- CATATAN -->
+                <tr>
+                    <th>Catatan</th>
+                    <td>
+                        <div class="editor-toolbar">
+                            <button type="button" onclick="formatTextPesan('bold')"><b>B</b></button>
+                            <button type="button" onclick="formatTextPesan('italic')"><i>I</i></button>
+                        </div>
+
+                        <div id="pesanSiswa" class="textarea-laporan editor"
+                            contenteditable="true"
+                            data-placeholder="Catatan tambahan..."></div>
+                    </td>
+                </tr>
+            </table>
+
         </div>
 
-    </div>
-</div>
-
-<!-- modal edit konseling -->
-<div class="modal-overlay" id="modalEditKonseling" style="display:none;">
-    <div class="modal-box modal-admin">
-
-        <div class="title-body-tambah">
-            <h3>Edit Konseling</h3>
+        <!-- BUTTON FIX -->
+        <div class="modal-actions-laporan">
+            <button type="button" id="closeIsiLap">Batal</button>
+            <button type="button" id="submitIsiLap">Simpan</button>
         </div>
-
-        <div class="form-tambah">
-
-            <form id="formEditKonseling" method="POST">
-                @csrf
-                @method('PUT')
-
-                <label>Tanggal Konseling</label><br>
-                <input type="text" name="nama" id="editNama" required>
-                <br><br>
-
-                <label>NIP</label><br>
-                <input type="text" name="nip" id="editNip" required>
-                <br><br>
-
-                <label>Password Baru (opsional)</label><br>
-                <input type="password" name="password">
-                <br><br>
-
-                <div class="modal-actions">
-                    <button type="button" id="closeEditModal">Batal</button>
-                    <button type="submit">Update</button>
-                </div>
-        </div>
-
-        </form>
 
     </div>
 </div>
@@ -225,123 +253,236 @@
 
 
 <script>
-    // modal tambah konseling
-    document.getElementById('openModalKonseling').addEventListener('click', () => {
-        document.getElementById('modalTambahKonseling').style.display = 'flex';
-    });
-
-    document.getElementById('closeTambahKonseling').addEventListener('click', () => {
-        document.getElementById('modalTambahKonseling').style.display = 'none';
-    });
-
-    // submit form
-    document.getElementById('formTambahKonseling').addEventListener('submit', function(e) {
-        e.preventDefault();
-
-        let formData = new FormData(this);
-
-        fetch('/admin/konseling/store', {
-                method: 'POST',
-                body: formData
-            })
-            .then(res => res.json())
-            .then(result => {
-                alert(result.message);
-                location.reload();
-            })
-            .catch(err => {
-                console.error(err);
-                alert("Gagal tambah konseling");
-            });
-    });
-
-    // modal deskripsi
     document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('btnAmbilFoto').onclick = () => {
+            let video = document.getElementById('cameraPreview');
+            let canvas = document.getElementById('cameraCanvas');
+            let img = document.getElementById('hasilFoto');
+
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+
+            let ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0);
+
+            let dataUrl = canvas.toDataURL('image/png');
+
+            img.src = dataUrl;
+            img.style.display = 'block';
+
+            foto = dataUrl;
+        };
+        // =========================
+        // MODAL TAMBAH KONSELING
+        // =========================
+        const modalTambah = document.getElementById('modalTambahKonseling');
+
+        document.getElementById('openModalKonseling').onclick = () => {
+            modalTambah.style.display = 'flex';
+        };
+
+        document.getElementById('closeTambahKonseling').onclick = () => {
+            modalTambah.style.display = 'none';
+        };
+
+        document.getElementById('formTambahKonseling').onsubmit = function(e) {
+            e.preventDefault();
+
+            fetch('/admin/konseling/store', {
+                    method: 'POST',
+                    body: new FormData(this)
+                })
+                .then(res => res.json())
+                .then(res => {
+                    alert(res.message);
+                    location.reload();
+                })
+                .catch(() => alert('Gagal tambah'));
+        };
+
+
+        // =========================
+        // MODAL DESKRIPSI
+        // =========================
         document.querySelectorAll('.detail').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.getElementById('modalDeskripsi').textContent =
-                    btn.dataset.deskripsi;
+            btn.onclick = () => {
+                document.getElementById('modalDeskripsi').textContent = btn.dataset.deskripsi;
                 document.getElementById('modalDetail').style.display = 'flex';
-            });
+            };
+        });
+
+        document.getElementById('closeModalDetail').onclick = () => {
+            document.getElementById('modalDetail').style.display = 'none';
+        };
+
+
+        // =========================
+        // MODAL LAPORAN
+        // =========================
+        let mode = 'create';
+        let foto = null;
+        let stream = null;
+
+        const modalLap = document.getElementById('modalIsiLap');
+        const btnSubmit = document.getElementById('submitIsiLap');
+        const btnClose = document.getElementById('closeIsiLap');
+        const catatan = document.getElementById('lapCatatan');
+        const pesan = document.getElementById('pesanSiswa');
+
+        document.querySelectorAll('.isi-lap').forEach(btn => {
+            btn.onclick = () => {
+
+                modalLap.style.display = 'flex';
+
+                // isi data
+                document.getElementById('laporanId').value = btn.dataset.id;
+                document.getElementById('lapNama').textContent = btn.dataset.nama;
+                document.getElementById('lapKelas').textContent = btn.dataset.kelas;
+                document.getElementById('lapKategori').textContent = btn.dataset.kategori;
+                document.getElementById('lapPermasalahan').textContent = btn.dataset.permasalahan;
+                document.getElementById('lapTanggal').textContent = btn.dataset.tanggal;
+
+                // reset kamera
+                foto = null;
+
+                // mode
+                let hasil = btn.dataset.hasil;
+                let fotoLama = btn.dataset.foto;
+                let pesanLama = btn.dataset.pesan;
+
+                // =====================
+                // MODE VIEW / CREATE
+                // =====================
+                if (hasil && hasil.trim() !== '') {
+                    mode = 'view';
+
+                    catatan.innerHTML = hasil;
+                    catatan.contentEditable = false;
+
+                    pesan.innerHTML = pesanLama || '';
+                    pesan.contentEditable = false;
+
+                    btnSubmit.textContent = 'Edit';
+
+                } else {
+                    mode = 'create';
+
+                    catatan.innerHTML = '';
+                    catatan.contentEditable = true;
+
+                    pesan.innerHTML = '';
+                    pesan.contentEditable = true;
+
+                    btnSubmit.textContent = 'Simpan';
+                }
+
+                // =====================
+                // FOTO LAMA
+                // =====================
+                let img = document.getElementById('hasilFoto');
+                let video = document.getElementById('cameraPreview');
+                let btnCam = document.getElementById('btnStartCamera');
+                let btnSnap = document.getElementById('btnAmbilFoto');
+
+                if (fotoLama) {
+                    img.src = '/storage/' + fotoLama; // sesuaikan path
+                    img.style.display = 'block';
+                } else {
+                    img.style.display = 'none';
+                }
+
+                // default: kamera disembunyikan
+                video.style.display = 'none';
+                btnCam.style.display = 'none';
+                btnSnap.style.display = 'none';
+
+            };
         });
 
 
-        document.getElementById('closeModalDetail')
-            .addEventListener('click', () => {
-                document.getElementById('modalDetail').style.display = 'none';
-            });
-    });
+        // CLOSE MODAL
+        btnClose.onclick = () => {
+            modalLap.style.display = 'none';
 
-    // laporan
-    let modeLaporan = 'create'; // create | view | edit
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+        };
 
-    document.querySelectorAll('.isi-lap').forEach(btn => {
-        btn.addEventListener('click', () => {
 
-            let hasil = btn.dataset.hasil;
+        // =========================
+        // BUTTON AKSI
+        // =========================
+        btnSubmit.onclick = function() {
 
-            document.getElementById('modalLaporan').style.display = 'flex';
+            // dari VIEW → EDIT
+            if (mode === 'view') {
+                mode = 'edit';
 
-            document.getElementById('laporanId').value = btn.dataset.id;
-            document.getElementById('namaSiswa').value = btn.dataset.nama;
-            document.getElementById('kelasSiswa').value = btn.dataset.kelas;
-            document.getElementById('kategori').value = btn.dataset.kategori;
-            document.getElementById('permasalahan').value = btn.dataset.permasalahan;
+                catatan.contentEditable = true;
+                pesan.contentEditable = true;
 
-            let textarea = document.getElementById('hasilLaporan');
-            let btnAksi = document.getElementById('btnAksiLaporan');
+                this.textContent = 'Update';
 
-            if (hasil && hasil.trim() !== '') {
-                modeLaporan = 'view';
-                textarea.value = hasil;
-                textarea.setAttribute('readonly', true);
-                btnAksi.textContent = 'Edit';
-            } else {
-                modeLaporan = 'create';
-                textarea.value = '';
-                textarea.removeAttribute('readonly');
-                btnAksi.textContent = 'Simpan';
+                // munculin kamera
+                document.getElementById('cameraPreview').style.display = 'block';
+                document.getElementById('btnStartCamera').style.display = 'inline-block';
+                document.getElementById('btnAmbilFoto').style.display = 'inline-block';
+
+                catatan.focus();
+                return;
+            }
+            // SIMPAN / UPDATE
+            let formData = new FormData();
+            formData.append('id_pengajuan', document.getElementById('laporanId').value);
+            formData.append('hasil_catatan', catatan.innerHTML);
+            formData.append('pesan_siswa', pesan.innerHTML);
+
+            if (foto) {
+                formData.append('foto', foto);
             }
 
-        });
-    });
+            fetch('/admin/laporan/simpan', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(res => {
+                    alert(res.message);
+                    location.reload();
+                })
+                .catch(() => alert('Gagal simpan'));
+        };
 
-    document.getElementById('closeModalLaporan').addEventListener('click', () => {
-        document.getElementById('modalLaporan').style.display = 'none';
-    });
 
-    document.getElementById('btnAksiLaporan').addEventListener('click', function() {
+        // =========================
+        // KAMERA
+        // =========================
+        document.getElementById('btnStartCamera').onclick = async () => {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: true
+                });
+                document.getElementById('cameraPreview').srcObject = stream;
+            } catch {
+                alert('Kamera tidak bisa diakses');
+            }
+        };
 
-        let textarea = document.getElementById('hasilLaporan');
 
-        if (modeLaporan === 'view') {
-            modeLaporan = 'edit';
-            textarea.removeAttribute('readonly');
-            this.textContent = 'Update';
-            textarea.focus();
-            return;
-        }
-
-        let formData = new FormData();
-        formData.append('id_pengajuan', document.getElementById('laporanId').value);
-        formData.append('hasil_catatan', textarea.value);
-
-        fetch('/admin/laporan/simpan', {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                },
-                body: formData
-            })
-            .then(res => res.json())
-            .then(res => {
-                alert(res.message);
-                location.reload();
-            })
-            .catch(err => {
-                console.error(err);
-                alert('Gagal simpan laporan');
-            });
 
     });
+    // =========================
+    // TEXT EDITOR
+    // =========================
+    function formatText(cmd) {
+        document.execCommand(cmd, false, null);
+    }
+
+    function formatTextPesan(cmd) {
+        document.execCommand(cmd, false, null);
+    }
 </script>
