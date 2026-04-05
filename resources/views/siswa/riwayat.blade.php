@@ -47,18 +47,24 @@
                             </tr>
                         </thead>
                         <tbody>
+                            @forelse($pengajuan as $item)
                             <tr>
-                                <td>20 Desember 2026</td>
-                                <td>Karir</td>
-                                <td><span class="menunggu">Menunggu</span></td>
-                                <td><a class="detail" href="#"><i class="fa-solid fa-folder"></i></a></td>
+                                <td>{{ \Carbon\Carbon::parse($item->tanggal_pengajuan)->format('d M Y') }}</td>
+                                <td>{{ $item->kategori->nama_kategori }}</td>
+                                <td> <span class="{{ $item->status }}">
+                                        {{ ucfirst($item->status) }}
+                                    </span></td>
+                                <td><a class="detail" data-nama="{{ $user->siswa->nama ?? '-' }}"
+                                        data-kelas="{{ $user->siswa->kelas ?? '-' }}"
+                                        data-tanggal="{{ \Carbon\Carbon::parse($item->tanggal_pengajuan)->format('d M Y') }}"
+                                        data-catatan="{{ $item->laporan->pesan_siswa ?? 'Belum ada catatan' }}"
+                                        href="#"><i class="fa-solid fa-folder"></i></a></td>
                             </tr>
+                            @empty
                             <tr>
-                                <td>07 Desember 2026</td>
-                                <td>Akademik</td>
-                                <td><span class="selesai">Selesai</span></td>
-                                <td><a class="detail" id="detail" href="#"><i class="fa-solid fa-folder"></i></a></td>
+                                <td colspan="3" style="text-align:center;">Belum ada riwayat konseling</td>
                             </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
@@ -73,40 +79,28 @@
 
 <div class="overlay" id="popupDetail">
     <div class="popup-content-detail">
-        <h2 class="modal-title">Laporan Bimbingan Konseling</h2>
-
-        <div class="info-data">
-            <ul>
-                <li>Nama</li>
-                <li>Kelas</li>
-                <li>Tgl, Konseling</li>
-            </ul>
-            <ul>
-                <li>: Berta Yuanita Putri Mayani</li>
-                <li>: XII-RPA</li>
-                <li>: 28 November 2026</li>
-            </ul>
-        </div>
+        <h2 class="modal-title">Hasil Bimbingan Konseling</h2>
 
         <table class="table-report">
             <tr>
-                <th>Kategori</th>
-                <td>Akademik</td>
+                <th>Nama</th>
+                <td id="modalNama"></td>
             </tr>
             <tr>
-                <th>Permasalahan</th>
-                <td>
-                    Siswa mengalami kesulitan dalam memahami materi
-                    pelajaran dan manajemen waktu belajar.
+                <th>Kelas</th>
+                <td id="modalKelas">
+
                 </td>
             </tr>
             <tr>
-                <th>Hasil & Catatan</th>
-                <td>
-                    Konselor memberikan arahan terkait pengelolaan
-                    waktu belajar serta strategi belajar mandiri.
-                    Siswa diharapkan dapat menerapkan jadwal belajar
-                    secara konsisten.
+                <th>Tgl, Konseling</th>
+                <td id="modalTanggal">
+
+                </td>
+            </tr>
+            <tr>
+                <th>Catatan</th>
+                <td id="modalCatatan">
                 </td>
             </tr>
         </table>
@@ -125,6 +119,19 @@
     btnDetails.forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.preventDefault();
+
+            // ambil data dari tombol
+            const nama = this.dataset.nama;
+            const kelas = this.dataset.kelas;
+            const tanggal = this.dataset.tanggal;
+            const catatan = this.dataset.catatan;
+
+            // inject ke modal
+            document.getElementById('modalNama').innerText = nama;
+            document.getElementById('modalKelas').innerText = kelas;
+            document.getElementById('modalTanggal').innerText = tanggal;
+            document.getElementById('modalCatatan').innerText = catatan;
+
             popup.classList.add('show');
         });
     });

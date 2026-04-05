@@ -11,6 +11,8 @@ use App\Models\PengajuanKonseling;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 
 class AdminController extends Controller
 {
@@ -175,26 +177,75 @@ class AdminController extends Controller
     }
     public function simpanLaporan(Request $request)
     {
-        $request->validate([
-            'id_pengajuan' => 'required',
-            'hasil_catatan' => 'required'
-        ]);
+        try {
 
-        $laporan = LaporanKonseling::where('id_pengajuan', $request->id_pengajuan)->first();
+            $validator = Validator::make($request->all(), [
+                'id_pengajuan' => 'required',
+                'hasil_catatan' => 'required',
+                'pesan_siswa' => 'nullable',
+                'bukti_file' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:10240'
+            ]);
 
+            if ($validator->fails()) {
+                return response()->json([
+                    'message' => $validator->errors()->first()
+                ], 422);
+            }
+
+            $laporan = LaporanKonseling::where('id_pengajuan', $request->id_pengajuan)->first();
+
+            $path = $laporan->bukti_file ?? null;
+
+            if ($request->hasFile('bukti_file')) {
+
+                if ($laporan && $laporan->bukti_file) {
+                    Storage::disk('public')->delete($laporan->bukti_file);
+                }
+
+                $path = $request->file('bukti_file')->store('bukti_konseling', 'public');
+            }
+
+            if ($laporan) {
+                $laporan->update([
+                    'hasil_catatan' => $request->hasil_catatan,
+                    'pesan_siswa' => $request->pesan_siswa,
+                    'bukti_file' => $path
+                ]);
+            } else {
+                LaporanKonseling::create([
+                    'id_pengajuan' => $request->id_pengajuan,
+                    'hasil_catatan' => $request->hasil_catatan,
+                    'pesan_siswa' => $request->pesan_siswa,
+                    'bukti_file' => $path
+                ]);
+            }
+
+            return response()->json([
+                'message' => 'Laporan berhasil disimpan'
+            ]);
+        } catch (\Exception $e) {
+
+            return response()->json([
+                'message' => 'ERROR: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function deleteKonseling($id)
+    {
+        $pengajuan = PengajuanKonseling::findOrFail($id);
+        $laporan = LaporanKonseling::where('id_pengajuan', $id)->first();
         if ($laporan) {
-            $laporan->update([
-                'hasil_catatan' => $request->hasil_catatan
-            ]);
-        } else {
-            LaporanKonseling::create([
-                'id_pengajuan' => $request->id_pengajuan,
-                'hasil_catatan' => $request->hasil_catatan
-            ]);
+            if ($laporan->bukti_file) {
+                Storage::disk('public')->delete($laporan->bukti_file);
+            }
+            $laporan->delete();
         }
 
+        $pengajuan->delete();
+
         return response()->json([
-            'message' => 'Laporan berhasil disimpan'
+            'message' => 'Data konseling berhasil dihapus'
         ]);
     }
 }

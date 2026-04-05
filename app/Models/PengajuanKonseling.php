@@ -33,7 +33,7 @@ class PengajuanKonseling extends Model
 
     public function kategori()
     {
-        return $this->belongsTo(KategoriPermasalahan::class, 'id_kategori');
+        return $this->belongsTo(\App\Models\KategoriPermasalahan::class, 'id_kategori');
     }
 
     public function jadwal()
@@ -43,6 +43,6 @@ class PengajuanKonseling extends Model
 
     public function laporan()
     {
-        return $this->hasOne(LaporanKonseling::class, 'id_pengajuan');
+        return $this->hasOne(\App\Models\LaporanKonseling::class, 'id_pengajuan');
     }
 }

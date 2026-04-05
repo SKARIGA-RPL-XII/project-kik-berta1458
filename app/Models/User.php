@@ -30,12 +30,10 @@ class User extends Authenticatable
 
     public function siswa()
     {
-        return $this->hasOne(Siswa::class, 'id_user', 'id');
+        return $this->hasOne(\App\Models\Siswa::class, 'id_user');
     }
-
     public function konselor()
     {
         return $this->hasOne(Konselor::class, 'id_user', 'id');
     }
 }
-

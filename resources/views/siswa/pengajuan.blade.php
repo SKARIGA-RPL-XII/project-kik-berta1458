@@ -18,7 +18,7 @@
                         <select id="filterKategori">
                             <option value="" selected disabled>Pilih Kategori</option>
                             <option value="Akademik">Akademik</option>
-                            <option value="Peribadi">Peribadi</option>
+                            <option value="Pribadi">Pribadi</option>
                             <option value="Sosial">Sosial</option>
                             <option value="Karir">Karir</option>
                         </select>
@@ -45,16 +45,19 @@
                             </tr>
                         </thead>
                         <tbody>
+                            @forelse($pengajuan as $item)
                             <tr>
-                                <td>20 Desember 2026</td>
-                                <td>Karir</td>
-                                <td><span class="menunggu">Menunggu</span></td>
+                                <td>{{ \Carbon\Carbon::parse($item->tanggal_pengajuan)->format('d M Y') }}</td>
+                                <td>{{ $item->kategori->nama_kategori }}</td>
+                                <td> <span class="{{ $item->status }}">
+                                        {{ ucfirst($item->status) }}
+                                    </span></td>
                             </tr>
+                            @empty
                             <tr>
-                                <td>07 Desember 2026</td>
-                                <td>Akademik</td>
-                                <td><span class="selesai">Selesai</span></td>
+                                <td colspan="3" style="text-align:center;">Belum ada pengajuan</td>
                             </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
@@ -68,17 +71,24 @@
             <div class="popup-content">
                 <div class="row form-pengajuan">
                     <div class="col-md-6">
-                        <form action="">
-                            <label for="">Kategori</label><br>
-                            <select name="" id="">
-                                <option value="" selected disabled>- Pilih Kategori Masalah -</option>
-                                <option value="">Akademik</option>
-                                <option value="">Peribadi</option>
-                                <option value="">Sosial</option>
-                                <option value="">Karir</option>
-                            </select><br><br>
-                            <label for="">Deskripsi</label><br>
-                            <textarea name="" placeholder="Ringkasan masalah" id=""></textarea>
+                        <form id="formPengajuan">
+
+                            @csrf
+
+                            <label>Kategori Masalah</label>
+                            <select name="id_kategori" required>
+                                <option value="">Pilih kategori</option>
+                                @foreach($kategori as $k)
+                                <option value="{{ $k->id }}">{{ $k->nama_kategori }}</option>
+                                @endforeach
+                            </select>
+
+                            <br><br>
+                            <input type="hidden" name="tanggal_pengajuan" id="tanggal_hidden">
+
+                            <label>Deskripsi Masalah</label>
+                            <textarea name="deskripsi_masalah" placeholder="Ceritakan masalahmu..."></textarea>
+
                         </form>
                     </div>
                     <div class="col-md-6">
@@ -102,11 +112,13 @@
 <script>
     flatpickr("#tanggal_konsultasi", {
         inline: true,
-        dateFormat: "Y-m-d"
-    });
-</script>
+        dateFormat: "Y-m-d",
 
-<script>
+        onChange: function(selectedDates, dateStr) {
+            document.getElementById('tanggal_hidden').value = dateStr;
+        }
+    });
+
     const btnTambah = document.querySelector('.btn-tambah-ajuan');
     const popup = document.getElementById('popupPengajuan');
     const btnBatal = document.getElementById('btnBatal');
@@ -119,6 +131,9 @@
         popup.classList.remove('show');
     });
 
+    document.querySelector('.submit-btn').addEventListener('click', function() {
+        document.getElementById('formPengajuan').requestSubmit();
+    });
     const tanggal = document.getElementById('filterTanggal');
     const kategori = document.getElementById('filterKategori');
     const container = document.getElementById('selectedFilter');
@@ -163,4 +178,38 @@
         tanggal.value = '';
         kategori.value = '';
     });
+
+    document.getElementById('formPengajuan').onsubmit = function(e) {
+        e.preventDefault();
+
+        const tanggal = document.getElementById('tanggal_hidden').value;
+
+        if (!tanggal) {
+            alert('Pilih tanggal dulu ya!');
+            return;
+        }
+
+        let formData = new FormData(this);
+
+        fetch('/siswa/pengajuan/store', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: formData
+            })
+            .then(async res => {
+                let data = await res.json();
+                if (!res.ok) throw data;
+                return data;
+            })
+            .then(res => {
+                alert(res.message);
+                location.reload();
+            })
+            .catch(err => {
+                alert(err.message || 'Gagal mengajukan');
+            });
+    };
 </script>

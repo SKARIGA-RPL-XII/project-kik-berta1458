@@ -794,8 +794,8 @@ table .berlangsung {
     color: #FFFFFF !important;
 }
 
-.flatpickr-day.today,
-.flatpickr-day:hover {
+.kal-jadwal.flatpickr-day.today,
+.kal-jadwal .flatpickr-day:hover {
     border-color: #00244B;
     width: 100%;
     margin-left: 28px !important;
@@ -812,15 +812,15 @@ table .berlangsung {
     margin-left: 3px !important;
 }
 
-.flatpickr-prev-month svg,
-.flatpickr-next-month svg {
+.kal-jadwal .flatpickr-prev-month svg,
+.kal-jadwal .flatpickr-next-month svg {
     fill: #FFB200 !important;
     margin-top: -10px !important;
     width: 20px !important;
     height: 20px !important;
 }
 
-.flatpickr-day.selected {
+.kal-jadwal .flatpickr-day.selected {
     background: #00244B !important;
     width: 100%;
     margin-left: 28px !important;
@@ -848,7 +848,7 @@ table .berlangsung {
     margin: 0 auto;
 }
 
-.flatpickr-day {
+.kal-jadwal .flatpickr-day {
     margin-left: 40px !important;
 }
 
@@ -1193,7 +1193,7 @@ button.tutup {
     margin: 30px 0;
 }
 
-.kalender .dayContainer {
+.kal-jadwal .kalender .dayContainer {
     display: grid !important;
     grid-template-columns: repeat(7, 1fr) !important;
     column-gap: 50px;
@@ -1206,7 +1206,7 @@ button.tutup {
     font-weight: 600 !important;
 }
 
-.kalender .flatpickr-calendar {
+.kal-jadwal .kalender .flatpickr-calendar {
     background: linear-gradient(to bottom, #0B2D4F 0%, #0B2D4F 13%, #FFC107 13%, #FFC107 20%, #FFFFFF 20%, #FFFFFF 100%) !important;
     padding: 0 0 10px 0;
 }
@@ -1301,7 +1301,7 @@ button.tutup {
 }
 
 .btn-batal,
-.btn-kirim, .modal-actions button {
+.btn-kirim, .modal-actions button,.modal-actions-laporan button {
     background: #002B5B;
     color: white;
     padding: 10px 28px;

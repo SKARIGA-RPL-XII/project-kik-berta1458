@@ -89,10 +89,9 @@
                                         data-kategori="{{ $lap->kategori->nama_kategori }}"
                                         data-tanggal="{{ $lap->tanggal_pengajuan }}"
                                         data-permasalahan="{{ $lap->deskripsi_masalah }}"
-                                        data-foto="{{ $lap->laporan->bukti_foto ?? '' }}"
-                                        data-catatan="{{ urlencode($lap->laporan->hasil_catatan ?? '') }}"
-                                        data-pesan="{{ urlencode($lap->laporan->pesan_siswa ?? '') }}">
-                                        <i class="fa-solid fa-pen-to-square"></i>
+                                        data-foto="{{ optional($lap->laporan)->bukti_file }}"
+                                        data-catatan="{{ urlencode(optional($lap->laporan)->hasil_catatan) }}"
+                                        data-pesan="{{ urlencode(optional($lap->laporan)->pesan_siswa) }}"> <i class="fa-solid fa-pen-to-square"></i>
                                     </button>
                                     @endif
                                 </td>
@@ -161,19 +160,14 @@
                 <tr>
                     <th>Bukti Konseling</th>
                     <td>
-                        <div class="kamera-wrap">
+                        <small style="color:red;">*File tidak dapat diubah setelah disimpan</small>
+                        <input style="margin-top:10px;" type="file" id="buktiFile" name="bukti_file" accept="image/*,.pdf">
 
-                            <video id="cameraPreview" autoplay></video>
+                        <!-- Preview Image -->
+                        <img id="previewImage" style="display:none; width:100%; margin-top:10px;" />
 
-                            <canvas id="cameraCanvas" style="display:none;"></canvas>
-                            <img id="hasilFoto" style="display:none; width:100%; margin-top:10px;" />
-
-                            <div class="kamera-btn">
-                                <button type="button" id="btnStartCamera">Buka Kamera</button>
-                                <button type="button" id="btnAmbilFoto">Ambil Foto</button>
-                            </div>
-
-                        </div>
+                        <!-- Preview PDF -->
+                        <iframe id="previewPDF" style="display:none; width:100%; height:300px; margin-top:10px;"></iframe>
                     </td>
                 </tr>
                 <tr>
@@ -295,61 +289,64 @@
             document.getElementById('lapPermasalahan').textContent = btn.dataset.permasalahan;
 
             let textarea = document.getElementById('lapCatatan');
+            let pesanEl = document.getElementById('pesanSiswa');
+
+            let previewImage = document.getElementById('previewImage');
+            let previewPDF = document.getElementById('previewPDF');
+            let fileInput = document.getElementById('buktiFile');
+
             let btnSimpan = document.getElementById('submitIsiLap');
             let btnBatal = document.getElementById('closeIsiLap');
             let btnTutup = document.getElementById('btnTutupDetailLap');
-            let title = document.querySelector('.modal-header-laporan h2');
 
-            let img = document.getElementById('hasilFoto');
-            let video = document.getElementById('cameraPreview');
-            let btnStart = document.getElementById('btnStartCamera');
-            let btnAmbil = document.getElementById('btnAmbilFoto');
+            // RESET
+            previewImage.style.display = "none";
+            previewPDF.style.display = "none";
+            fileInput.value = "";
 
-            let pesanEl = document.getElementById('pesanSiswa');
+            // ISI DATA
+            textarea.innerHTML = btn.dataset.catatan ? decodeURIComponent(btn.dataset.catatan) : "";
+            pesanEl.innerHTML = btn.dataset.pesan ? decodeURIComponent(btn.dataset.pesan) : "";
 
-            if (btn.dataset.pesan && btn.dataset.pesan.trim() !== "") {
-                pesanEl.innerHTML = decodeURIComponent(btn.dataset.pesan);
-                pesanEl.contentEditable = "false";
-            } else {
-                pesanEl.innerHTML = "";
-                pesanEl.contentEditable = "true";
-            }
+            let sudahAdaLaporan = btn.dataset.catatan && btn.dataset.catatan.trim() !== "";
 
-            // reset
-            img.style.display = "none";
-            video.style.display = "block";
-            btnStart.style.display = "inline-block";
-            btnAmbil.style.display = "inline-block";
-
-            textarea.contentEditable = "true";
-            btnSimpan.style.display = "inline-block";
-            btnBatal.style.display = "inline-block";
-            btnTutup.style.display = "none";
-
-            // detail
-            if (btn.dataset.catatan && btn.dataset.catatan.trim() !== "") {
-
-                textarea.innerHTML = decodeURIComponent(btn.dataset.catatan);
-                title.textContent = "Detail Laporan";
+            // 🔥 MODE DETAIL (SUDAH DISIMPAN)
+            if (sudahAdaLaporan) {
 
                 textarea.contentEditable = "false";
+                pesanEl.contentEditable = "false";
+
+                fileInput.style.display = "none"; // ❌ tidak bisa upload lagi
 
                 btnSimpan.style.display = "none";
                 btnBatal.style.display = "none";
-                btnTutup.style.display = "block";
+                btnTutup.style.display = "inline-block";
 
+                // ✅ tampilkan preview file lama
                 if (btn.dataset.foto) {
-                    img.src = btn.dataset.foto;
-                    img.style.display = "block";
+                    let url = "/storage/" + btn.dataset.foto;
 
-                    video.style.display = "none";
-                    btnStart.style.display = "none";
-                    btnAmbil.style.display = "none";
+                    if (btn.dataset.foto.endsWith('.pdf')) {
+                        previewPDF.src = url;
+                        previewPDF.style.display = "block";
+                    } else {
+                        previewImage.src = url;
+                        previewImage.style.display = "block";
+                    }
                 }
 
-            } else {
-                textarea.innerHTML = "";
-                title.textContent = "Laporan Bimbingan Konseling";
+            }
+            // 🔥 MODE INPUT (BELUM ADA LAPORAN)
+            else {
+
+                textarea.contentEditable = "true";
+                pesanEl.contentEditable = "true";
+
+                fileInput.style.display = "block";
+
+                btnSimpan.style.display = "inline-block";
+                btnBatal.style.display = "inline-block";
+                btnTutup.style.display = "none";
             }
 
             btnSimpan.setAttribute("data-current-id", btn.dataset.id);
@@ -358,6 +355,30 @@
         });
     });
 
+    document.getElementById('buktiFile').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const previewImage = document.getElementById('previewImage');
+        const previewPDF = document.getElementById('previewPDF');
+
+        previewImage.style.display = 'none';
+        previewPDF.style.display = 'none';
+
+        if (file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                previewImage.src = event.target.result;
+                previewImage.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+
+        } else if (file.type === 'application/pdf') {
+            const url = URL.createObjectURL(file);
+            previewPDF.src = url;
+            previewPDF.style.display = 'block';
+        }
+    });
 
     // tutup
     document.getElementById('btnTutupDetailLap').addEventListener('click', () => {
@@ -371,90 +392,43 @@
 
     // submit
     document.getElementById('submitIsiLap').addEventListener('click', function() {
+    let id = this.getAttribute("data-current-id");
+    let catatan = document.getElementById('lapCatatan').innerHTML.trim();
+    let pesan = document.getElementById('pesanSiswa').innerHTML;
+    let fileInput = document.getElementById('buktiFile');
 
-        let id = this.getAttribute("data-current-id");
-        let catatan = document.getElementById('lapCatatan').innerHTML.trim();
-        let foto = document.getElementById('hasilFoto').src || null;
+    if (!catatan) {
+        alert("Catatan wajib diisi");
+        return;
+    }
 
-        let pesan = document.getElementById('pesanSiswa') ?
-            document.getElementById('pesanSiswa').innerHTML :
-            '';
+    let formData = new FormData();
+    formData.append('hasil_catatan', catatan);
+    formData.append('pesan_siswa', pesan);
 
-        if (!catatan) {
-            alert("Catatan wajib diisi");
-            return;
-        }
+    // Tambahkan file hanya kalau ada upload baru
+    if (fileInput.files[0]) {
+        formData.append('bukti_file', fileInput.files[0]);
+    }
 
-        if (!foto || !foto.startsWith("data:image")) {
-            alert("Foto wajib diambil");
-            return;
-        }
+    formData.append('_token', '{{ csrf_token() }}');
 
-        let formData = new FormData();
-        formData.append('hasil_catatan', catatan);
-        formData.append('bukti_foto', foto);
-        formData.append('pesan_siswa', pesan);
-
-        formData.append('_token', '{{ csrf_token() }}');
-
-        fetch(`/konselor/laporan/${id}/simpan`, {
-                method: 'POST',
-                body: formData
-            })
-            .then(async res => {
-                let data = await res.json();
-                if (!res.ok) throw data;
-                return data;
-            })
-            .then(result => {
-                alert(result.message);
-                location.reload();
-            })
-            .catch(err => {
-                console.error("ERROR:", err);
-                alert(err.message || "Terjadi error!");
-            });
-    });
-
-
-    // kamera
-    let stream = null;
-
-    document.getElementById('btnStartCamera').addEventListener('click', async () => {
-        try {
-            stream = await navigator.mediaDevices.getUserMedia({
-                video: true
-            });
-            document.getElementById('cameraPreview').srcObject = stream;
-        } catch (err) {
-            alert("Tidak bisa akses kamera");
-        }
-    });
-
-    document.getElementById('btnAmbilFoto').addEventListener('click', () => {
-        let video = document.getElementById('cameraPreview');
-        let canvas = document.getElementById('cameraCanvas');
-        let img = document.getElementById('hasilFoto');
-        let btnStart = document.getElementById('btnStartCamera');
-        let btnAmbil = document.getElementById('btnAmbilFoto');
-
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-
-        let ctx = canvas.getContext('2d');
-        ctx.drawImage(video, 0, 0);
-
-        let dataURL = canvas.toDataURL("image/png");
-
-        img.src = dataURL;
-        img.style.display = "block";
-
-        video.style.display = "none";
-        btnStart.style.display = "none";
-        btnAmbil.style.display = "none";
-
-        if (stream) {
-            stream.getTracks().forEach(track => track.stop());
-        }
-    });
+    fetch(`/konselor/laporan/${id}/simpan`, {
+            method: 'POST',
+            body: formData
+        })
+        .then(async res => {
+            let data = await res.json();
+            if (!res.ok) throw data;
+            return data;
+        })
+        .then(result => {
+            alert(result.message);
+            location.reload();
+        })
+        .catch(err => {
+            console.error("ERROR:", err);
+            alert(err.message || "Terjadi error!");
+        });
+});
 </script>

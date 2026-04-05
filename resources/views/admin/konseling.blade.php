@@ -26,7 +26,7 @@
                         <th>Nama Siswa</th>
                         <th>Kategori</th>
                         <th>Status</th>
-                        <th>Hasil</th>
+                        <th>Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -73,12 +73,14 @@
                                 data-tanggal="{{ $lap->tanggal_pengajuan }}"
                                 data-permasalahan="{{ $lap->deskripsi_masalah }}"
                                 data-hasil="{{ $lap->laporan->hasil_catatan ?? '' }}"
-                                data-foto="{{ $lap->laporan->foto ?? '' }}"
-                                data-pesan="{{ $lap->laporan->pesan_siswa ?? '' }}">
+                                data-foto="{{ $lap->laporan->bukti_file ?? '' }}" data-pesan="{{ $lap->laporan->pesan_siswa ?? '' }}">
                                 <i class="fa-solid fa-pen-to-square"></i>
                             </button>
                             @endif
-
+                            <button class="aksi-admin delete"
+                                data-id="{{ $lap->id}}">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
                         </td>
 
                     </tr>
@@ -128,23 +130,16 @@
                     <td id="lapPermasalahan"></td>
                 </tr>
 
-                <!-- KAMERA -->
                 <tr>
                     <th>Bukti Konseling</th>
                     <td>
-                        <div class="kamera-wrap">
+                        <input style="margin-top:10px;" type="file" id="buktiFile" name="bukti_file" accept="image/*,.pdf">
 
-                            <video id="cameraPreview" autoplay></video>
+                        <!-- Preview Image -->
+                        <img id="previewImage" style="display:none; width:100%; margin-top:10px;" />
 
-                            <canvas id="cameraCanvas" style="display:none;"></canvas>
-                            <img id="hasilFoto" style="display:none; width:100%; margin-top:10px;" />
-
-                            <div class="kamera-btn">
-                                <button type="button" id="btnStartCamera">Buka Kamera</button>
-                                <button type="button" id="btnAmbilFoto">Ambil Foto</button>
-                            </div>
-
-                        </div>
+                        <!-- Preview PDF -->
+                        <iframe id="previewPDF" style="display:none; width:100%; height:300px; margin-top:10px;"></iframe>
                     </td>
                 </tr>
 
@@ -254,27 +249,8 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        document.getElementById('btnAmbilFoto').onclick = () => {
-            let video = document.getElementById('cameraPreview');
-            let canvas = document.getElementById('cameraCanvas');
-            let img = document.getElementById('hasilFoto');
 
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-
-            let ctx = canvas.getContext('2d');
-            ctx.drawImage(video, 0, 0);
-
-            let dataUrl = canvas.toDataURL('image/png');
-
-            img.src = dataUrl;
-            img.style.display = 'block';
-
-            foto = dataUrl;
-        };
-        // =========================
         // MODAL TAMBAH KONSELING
-        // =========================
         const modalTambah = document.getElementById('modalTambahKonseling');
 
         document.getElementById('openModalKonseling').onclick = () => {
@@ -301,9 +277,7 @@
         };
 
 
-        // =========================
         // MODAL DESKRIPSI
-        // =========================
         document.querySelectorAll('.detail').forEach(btn => {
             btn.onclick = () => {
                 document.getElementById('modalDeskripsi').textContent = btn.dataset.deskripsi;
@@ -316,9 +290,7 @@
         };
 
 
-        // =========================
         // MODAL LAPORAN
-        // =========================
         let mode = 'create';
         let foto = null;
         let stream = null;
@@ -349,6 +321,7 @@
                 let hasil = btn.dataset.hasil;
                 let fotoLama = btn.dataset.foto;
                 let pesanLama = btn.dataset.pesan;
+                let fileInput = document.getElementById('buktiFile');
 
                 // =====================
                 // MODE VIEW / CREATE
@@ -363,7 +336,7 @@
                     pesan.contentEditable = false;
 
                     btnSubmit.textContent = 'Edit';
-
+                    fileInput.style.display = 'none';
                 } else {
                     mode = 'create';
 
@@ -374,27 +347,30 @@
                     pesan.contentEditable = true;
 
                     btnSubmit.textContent = 'Simpan';
+                    fileInput.style.display = 'block';
                 }
 
                 // =====================
                 // FOTO LAMA
                 // =====================
-                let img = document.getElementById('hasilFoto');
-                let video = document.getElementById('cameraPreview');
-                let btnCam = document.getElementById('btnStartCamera');
-                let btnSnap = document.getElementById('btnAmbilFoto');
+
+                let previewImage = document.getElementById('previewImage');
+                let previewPDF = document.getElementById('previewPDF');
+
+                previewImage.style.display = "none";
+                previewPDF.style.display = "none";
 
                 if (fotoLama) {
-                    img.src = '/storage/' + fotoLama; // sesuaikan path
-                    img.style.display = 'block';
-                } else {
-                    img.style.display = 'none';
-                }
+                    let url = "/storage/" + fotoLama;
 
-                // default: kamera disembunyikan
-                video.style.display = 'none';
-                btnCam.style.display = 'none';
-                btnSnap.style.display = 'none';
+                    if (fotoLama.endsWith('.pdf')) {
+                        previewPDF.src = url;
+                        previewPDF.style.display = "block";
+                    } else {
+                        previewImage.src = url;
+                        previewImage.style.display = "block";
+                    }
+                }
 
             };
         });
@@ -415,7 +391,7 @@
         // =========================
         btnSubmit.onclick = function() {
 
-            // dari VIEW → EDIT
+            // MODE VIEW → EDIT
             if (mode === 'view') {
                 mode = 'edit';
 
@@ -423,23 +399,27 @@
                 pesan.contentEditable = true;
 
                 this.textContent = 'Update';
-
-                // munculin kamera
-                document.getElementById('cameraPreview').style.display = 'block';
-                document.getElementById('btnStartCamera').style.display = 'inline-block';
-                document.getElementById('btnAmbilFoto').style.display = 'inline-block';
-
-                catatan.focus();
+                document.getElementById('buktiFile').style.display = 'block';
                 return;
             }
-            // SIMPAN / UPDATE
+
             let formData = new FormData();
+            let fileInput = document.getElementById('buktiFile');
+            let isiCatatan = catatan.innerHTML.trim();
+
+            if (!isiCatatan || isiCatatan === "<br>") {
+                alert("Hasil konseling wajib diisi");
+                return;
+            }
+
+            formData.append('hasil_catatan', isiCatatan);
             formData.append('id_pengajuan', document.getElementById('laporanId').value);
             formData.append('hasil_catatan', catatan.innerHTML);
             formData.append('pesan_siswa', pesan.innerHTML);
 
-            if (foto) {
-                formData.append('foto', foto);
+            // ✅ INI YANG PENTING
+            if (fileInput.files[0]) {
+                formData.append('bukti_file', fileInput.files[0]);
             }
 
             fetch('/admin/laporan/simpan', {
@@ -449,27 +429,30 @@
                     },
                     body: formData
                 })
-                .then(res => res.json())
+                .then(async res => {
+                    let text = await res.text();
+
+                    try {
+                        let data = JSON.parse(text);
+
+                        if (!res.ok) throw data;
+
+                        return data;
+                    } catch (e) {
+                        console.error("RAW RESPONSE:", text);
+                        throw {
+                            message: "Response bukan JSON!"
+                        };
+                    }
+                })
                 .then(res => {
                     alert(res.message);
                     location.reload();
                 })
-                .catch(() => alert('Gagal simpan'));
-        };
-
-
-        // =========================
-        // KAMERA
-        // =========================
-        document.getElementById('btnStartCamera').onclick = async () => {
-            try {
-                stream = await navigator.mediaDevices.getUserMedia({
-                    video: true
+                .catch(err => {
+                    console.error("ERROR:", err);
+                    alert(err.message || 'Gagal update');
                 });
-                document.getElementById('cameraPreview').srcObject = stream;
-            } catch {
-                alert('Kamera tidak bisa diakses');
-            }
         };
 
 
@@ -485,4 +468,52 @@
     function formatTextPesan(cmd) {
         document.execCommand(cmd, false, null);
     }
+
+    // preview setelah disimpan
+    document.getElementById('buktiFile').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const previewImage = document.getElementById('previewImage');
+        const previewPDF = document.getElementById('previewPDF');
+
+        previewImage.style.display = 'none';
+        previewPDF.style.display = 'none';
+
+        if (file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                previewImage.src = event.target.result;
+                previewImage.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+
+        } else if (file.type === 'application/pdf') {
+            const url = URL.createObjectURL(file);
+            previewPDF.src = url;
+            previewPDF.style.display = 'block';
+        }
+    });
+
+    document.querySelectorAll('.delete').forEach(btn => {
+        btn.addEventListener('click', function() {
+
+            let id = this.dataset.id;
+
+            if (!confirm('Yakin hapus data ini?')) return;
+
+            fetch(`/admin/konseling/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    }
+                })
+                .then(res => res.json())
+                .then(res => {
+                    alert(res.message);
+                    location.reload();
+                })
+                .catch(() => alert('Gagal hapus'));
+        });
+    });
 </script>
