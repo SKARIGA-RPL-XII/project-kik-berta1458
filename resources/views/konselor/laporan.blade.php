@@ -392,43 +392,47 @@
 
     // submit
     document.getElementById('submitIsiLap').addEventListener('click', function() {
-    let id = this.getAttribute("data-current-id");
-    let catatan = document.getElementById('lapCatatan').innerHTML.trim();
-    let pesan = document.getElementById('pesanSiswa').innerHTML;
-    let fileInput = document.getElementById('buktiFile');
+        let id = this.getAttribute("data-current-id");
+        let catatan = document.getElementById('lapCatatan').innerHTML.trim();
+        let pesan = document.getElementById('pesanSiswa').innerHTML;
+        let fileInput = document.getElementById('buktiFile');
 
-    if (!catatan) {
-        alert("Catatan wajib diisi");
-        return;
-    }
+        if (!catatan) {
+            alert("Catatan wajib diisi");
+            return;
+        }
 
-    let formData = new FormData();
-    formData.append('hasil_catatan', catatan);
-    formData.append('pesan_siswa', pesan);
+        let formData = new FormData();
+        formData.append('hasil_catatan', catatan);
+        formData.append('pesan_siswa', pesan);
 
-    // Tambahkan file hanya kalau ada upload baru
-    if (fileInput.files[0]) {
-        formData.append('bukti_file', fileInput.files[0]);
-    }
+        // Tambahkan file hanya kalau ada upload baru
+        if (fileInput.files[0]) {
+            formData.append('bukti_file', fileInput.files[0]);
+        }
 
-    formData.append('_token', '{{ csrf_token() }}');
+        formData.append('_token', '{{ csrf_token() }}');
 
-    fetch(`/konselor/laporan/${id}/simpan`, {
-            method: 'POST',
-            body: formData
-        })
-        .then(async res => {
-            let data = await res.json();
-            if (!res.ok) throw data;
-            return data;
-        })
-        .then(result => {
-            alert(result.message);
-            location.reload();
-        })
-        .catch(err => {
-            console.error("ERROR:", err);
-            alert(err.message || "Terjadi error!");
-        });
-});
+        fetch(`/konselor/laporan/${id}/simpan`, {
+                method: 'POST',
+                body: formData
+            })
+            .then(async res => {
+                let text = await res.text();
+                console.log("RESPONSE:", text); // 🔥 DEBUG
+
+                try {
+                    let data = JSON.parse(text);
+
+                    if (!res.ok) throw data;
+
+                    alert(data.message);
+                    location.reload();
+
+                } catch (e) {
+                    console.error("Bukan JSON:", text);
+                    alert("Server error, cek console!");
+                }
+            });
+    });
 </script>

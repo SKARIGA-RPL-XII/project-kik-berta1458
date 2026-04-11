@@ -2,25 +2,24 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\PengajuanKonseling;
 use App\Models\LaporanKonseling;
+use App\Models\PengajuanKonseling;
+use App\Models\JadwalKonseling;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Storage;
 
 class KonselorLaporanController extends Controller
 {
     public function index()
     {
-        // Update status otomatis jadi berlangsung
-        PengajuanKonseling::where('status', 'dijadwalkan')
-            ->whereDate('tanggal_pengajuan', Carbon::today())
-            ->update(['status' => 'berlangsung']);
+        $this->updateStatusOtomatis();
 
-        // Ambil data laporan
+        $user = \App\Models\User::find(session('id_user'));
+
         $laporan = PengajuanKonseling::with(['siswa', 'kategori', 'laporan'])
-            ->whereIn('status', ['berlangsung', 'selesai', 'ditolak', 'dijadwalkan'])
-            ->orderBy('tanggal_pengajuan', 'desc')
+            ->where('id_konselor', $user->konselor->id)
+            ->whereIn('status', ['berlangsung', 'selesai', 'dijadwalkan', 'ditolak'])
+            ->latest()
             ->get();
 
         return view('konselor.laporan', compact('laporan'));
@@ -29,58 +28,75 @@ class KonselorLaporanController extends Controller
     public function simpanLaporan(Request $request, $id)
     {
         try {
-            // Ambil laporan lama (kalau ada)
-            $laporanLama = LaporanKonseling::where('id_pengajuan', $id)->first();
 
-            // Validasi
             $request->validate([
                 'hasil_catatan' => 'required',
-                'bukti_file' => $laporanLama 
-                    ? 'nullable|file|mimes:jpg,jpeg,png,pdf|max:10240' 
-                    : 'required|file|mimes:jpg,jpeg,png,pdf|max:10240',
-                'pesan_siswa' => 'nullable',
             ]);
 
-            $hasil = $request->input('hasil_catatan');
-            $pesan = $request->input('pesan_siswa');
-
-            // Gunakan path lama jika tidak ada upload baru
-            $path = $laporanLama->bukti_file ?? null;
+            $filePath = null;
 
             if ($request->hasFile('bukti_file')) {
-                // Hapus file lama kalau ada
-                if ($laporanLama && $laporanLama->bukti_file) {
-                    Storage::disk('public')->delete($laporanLama->bukti_file);
-                }
-                $file = $request->file('bukti_file');
-                $path = $file->store('bukti_konseling', 'public');
+                $filePath = $request->file('bukti_file')->store('bukti', 'public');
             }
 
-            // Simpan laporan
-            LaporanKonseling::updateOrCreate(
-                ['id_pengajuan' => $id],
-                [
-                    'hasil_catatan' => $hasil,
-                    'bukti_file'    => $path,
-                    'pesan_siswa'   => $pesan
-                ]
-            );
+            $laporan = LaporanKonseling::where('id_pengajuan', $id)->first();
 
-            // Update status pengajuan jadi selesai
-            $pengajuan = PengajuanKonseling::findOrFail($id);
-            $pengajuan->status = 'selesai';
-            $pengajuan->save();
+            if ($laporan) {
+                $laporan->update([
+                    'hasil_catatan' => $request->hasil_catatan,
+                    'pesan_siswa' => $request->pesan_siswa,
+                    'bukti_file' => $filePath ?? $laporan->bukti_file
+                ]);
+            } else {
+                LaporanKonseling::create([
+                    'id_pengajuan' => $id,
+                    'hasil_catatan' => $request->hasil_catatan,
+                    'pesan_siswa' => $request->pesan_siswa,
+                    'bukti_file' => $filePath
+                ]);
+            }
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Laporan berhasil disimpan!',
+            // 🔥 update status jadi selesai
+            PengajuanKonseling::where('id', $id)->update([
+                'status' => 'selesai'
             ]);
 
+            return response()->json([
+                'message' => 'Laporan berhasil disimpan'
+            ]);
         } catch (\Exception $e) {
             return response()->json([
-                'success' => false,
                 'message' => $e->getMessage()
             ], 500);
         }
+    }
+
+    private function updateStatusOtomatis()
+    {
+        $today = Carbon::today();
+
+        // berlangsung
+        JadwalKonseling::whereDate('tanggal_konseling', $today)
+            ->whereHas('pengajuan', function ($q) {
+                $q->where('status', 'dijadwalkan');
+            })
+            ->get()
+            ->each(function ($jadwal) {
+                $jadwal->pengajuan->update([
+                    'status' => 'berlangsung'
+                ]);
+            });
+
+        // selesai (lewat tanggal)
+        JadwalKonseling::whereDate('tanggal_konseling', '<', $today)
+            ->whereHas('pengajuan', function ($q) {
+                $q->where('status', 'berlangsung');
+            })
+            ->get()
+            ->each(function ($jadwal) {
+                $jadwal->pengajuan->update([
+                    'status' => 'selesai'
+                ]);
+            });
     }
 }

@@ -506,7 +506,8 @@ button.logout {
     ;
 }
 
-.modal-header-laporan h2, .modal-admin h3 {
+.modal-header-laporan h2,
+.modal-admin h3 {
     color: #5A0010;
     background: #5A00101A;
     padding: 5px;
@@ -674,25 +675,31 @@ table .berlangsung {
     list-style: none;
     padding: 0;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
     gap: 10px;
 }
 
-.aksi-cepat a {
-    color: #ffffff;
-    text-decoration: none;
-    text-align: center;
-    font-size: 14px;
-    font-weight: 600;
+.aksi-cepat ul li {
+    width: 50%;
+    max-width: 100%;
 }
 
-.aksi-cepat ul li {
+.aksi-cepat ul li a {
+    display: flex;
+    justify-content: center;
+    align-items: center;
     background: #00244B;
-    padding: 10px;
+    color: #ffffff;
+    height: 55px;
     border-radius: 10px;
-    width: 100%;
-    text-align: center;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: 600;
+    transition: 0.3s;
+}
+
+.aksi-cepat ul li a:hover {
+    background: #003a75;
+    transform: translateY(-2px);
 }
 
 .btn-tutup-lap {
@@ -778,7 +785,7 @@ table .berlangsung {
     border-radius: 10px;
     padding: 10px;
     width: 100%;
-    min-height: 278px;
+    min-height: 385px;
 }
 
 .highlight-konseling {
@@ -787,18 +794,30 @@ table .berlangsung {
     margin-left: 28px !important;
 }
 
-.flatpickr-day.punya-jadwal {
+.kal-jadwal .flatpickr-day.punya-jadwal {
     background: #00244B;
-    width: 100%;
-    margin-left: 28px !important;
-    color: #FFFFFF !important;
+    color: #fff;
 }
 
-.kal-jadwal.flatpickr-day.today,
-.kal-jadwal .flatpickr-day:hover {
+.kal-jadwal .flatpickr-calendar.inline {
+    width: 100%;
+    padding: 20px;
+}
+
+.kal-jadwal .flatpickr-days {
+    width: 95%;
+    margin: 0 auto;
+}
+
+.kal-jadwal .dayContainer {
+    width: 100%;
+    text-align: center;
+}
+
+.kal-jadwal-konselor .flatpickr-day.today,
+.kal-jadwal-konselor .flatpickr-day:hover {
     border-color: #00244B;
     width: 100%;
-    margin-left: 28px !important;
 }
 
 .flatpickr-current-month .numInputWrapper span.arrowUp:after {
@@ -812,26 +831,18 @@ table .berlangsung {
     margin-left: 3px !important;
 }
 
-.kal-jadwal .flatpickr-prev-month svg,
-.kal-jadwal .flatpickr-next-month svg {
+.kal-jadwal-konselor .flatpickr-prev-month svg,
+.kal-jadwal-konselor .flatpickr-next-month svg {
     fill: #FFB200 !important;
     margin-top: -10px !important;
     width: 20px !important;
     height: 20px !important;
 }
 
-.kal-jadwal .flatpickr-day.selected {
+.kal-jadwal-konselor .flatpickr-day.selected {
     background: #00244B !important;
     width: 100%;
-    margin-left: 28px !important;
-}
-
-.flatpickr-calendar.inline {
-    display: block;
-    position: relative;
-    top: 2px;
-    width: 100%;
-    padding: 20px;
+    border-radius: 100%;
 }
 
 .flatpickr-current-month {
@@ -848,20 +859,11 @@ table .berlangsung {
     margin: 0 auto;
 }
 
-.kal-jadwal .flatpickr-day {
-    margin-left: 40px !important;
-}
-
-.flatpickr-days {
-    width: 95% !important;
-    margin: 0 auto;
-}
-
-.dayContainer {
+.flatpickr-calendar.inline {
+    display: block;
+    position: relative;
+    top: 2px;
     width: 100% !important;
-    min-width: 100% !important;
-    max-width: 100% !important;
-    text-align: center !important;
 }
 
 .btn-ajuan {
@@ -943,14 +945,6 @@ button.btn-tambah-ajuan {
     color: #333333;
 }
 
-.riwayat button {
-    border: 1px solid #00244B;
-    background: #FFFFFF;
-    color: #333333;
-    border-radius: 10px;
-    padding: 10px 12px;
-}
-
 .riwayat .search {
     display: flex;
     justify-content: left;
@@ -972,7 +966,8 @@ button.btn-tambah-ajuan {
 .tolak,
 .terima,
 .isi-lap,
-.catatan {
+.catatan,
+.edit-konselor {
     background: #00244B;
     padding: 10px 13px;
     border-radius: 50px;
@@ -984,7 +979,8 @@ button.btn-tambah-ajuan {
 .tolak i,
 .terima i,
 .isi-lap i,
-.catatan i {
+.catatan i,
+.edit-konselor i {
     color: #FFB200;
     font-size: 18px;
 }
@@ -1193,26 +1189,122 @@ button.tutup {
     margin: 30px 0;
 }
 
-.kal-jadwal .kalender .dayContainer {
-    display: grid !important;
-    grid-template-columns: repeat(7, 1fr) !important;
-    column-gap: 50px;
+/* ============================= */
+/* KALENDER KONSELOR (ISOLATED) */
+/* ============================= */
+
+.kal-jadwal-konselor .flatpickr-calendar {
+    background: linear-gradient(to bottom,
+            #0B2D4F 0%,
+            #0B2D4F 13%,
+            #FFC107 13%,
+            #FFC107 20%,
+            #FFFFFF 20%,
+            #FFFFFF 100%) !important;
+    border-radius: 10px;
+    overflow: hidden;
 }
 
+/* HEADER BULAN */
+.kal-jadwal-konselor .flatpickr-current-month {
+    color: #FFB200 !important;
+    font-weight: 600;
+}
+
+/* SELECT BULAN & TAHUN */
+.kal-jadwal-konselor select.flatpickr-monthDropdown-months,
+.kal-jadwal-konselor input.numInput.cur-year {
+    color: #FFB200 !important;
+    font-weight: 600;
+}
+
+/* HARI (Sen, Sel, dst) */
+.kal-jadwal-konselor span.flatpickr-weekday {
+    color: #00244B !important;
+    font-weight: 600;
+}
+
+/* GRID TANGGAL */
+.kal-jadwal-konselor .dayContainer {
+    display: grid !important;
+    grid-template-columns: repeat(7, 1fr) !important;
+    text-align: center;
+    column-gap: 135px;
+    margin-left: 68px;
+}
+
+.kal-jadwal-konselor .flatpickr-current-month {
+    margin-top: 5px !important;
+}
+
+/* WRAPPER */
+.kal-jadwal-konselor .flatpickr-day,
+.kal-jadwal-konselor .flatpickr-days {
+    width: 100% !important;
+    margin: 0 auto;
+}
+
+/* HARI BIASA */
+.kal-jadwal-konselor .flatpickr-day {
+    border-radius: 8px;
+    transition: 0.2s;
+}
+
+/* HOVER */
+.kal-jadwal-konselor .flatpickr-day:hover {
+    background: #00244B;
+    color: #fff;
+}
+
+/* HARI INI */
+.kal-jadwal-konselor .flatpickr-day.today {
+    border: 1px solid #00244B;
+    border-radius: 100%;
+}
+
+/* SELECTED */
+.kal-jadwal-konselor .flatpickr-day.selected {
+    background: #00244B !important;
+    color: #fff !important;
+}
+
+/* TANGGAL YANG PUNYA JADWAL */
+.kal-jadwal-konselor .flatpickr-day.punya-jadwal {
+    background: #00244B;
+    color: #FFFFFF !important;
+    font-weight: bold;
+}
+
+/* ARROW BULAN */
+.kal-jadwal-konselor .flatpickr-prev-month svg,
+.kal-jadwal-konselor .flatpickr-next-month svg {
+    fill: #FFB200 !important;
+    width: 18px;
+    height: 18px;
+}
+
+/* ARROW INPUT TAHUN */
+.kal-jadwal-konselor .flatpickr-current-month .numInputWrapper span.arrowUp:after {
+    border-bottom-color: #FFB200 !important;
+}
+
+.kal-jadwal-konselor .flatpickr-current-month .numInputWrapper span.arrowDown:after {
+    border-top-color: #FFB200 !important;
+}
 
 .kalender select.flatpickr-monthDropdown-months,
 .kalender input.numInput.cur-year {
-    color: #FFB200 !important;
-    font-weight: 600 !important;
+    color: #FFB200;
+    font-weight: 600;
 }
 
-.kal-jadwal .kalender .flatpickr-calendar {
+.kal-jadwal-konselor .flatpickr-calendar {
     background: linear-gradient(to bottom, #0B2D4F 0%, #0B2D4F 13%, #FFC107 13%, #FFC107 20%, #FFFFFF 20%, #FFFFFF 100%) !important;
     padding: 0 0 10px 0;
 }
 
-.kalender .flatpickr-current-month {
-    margin-top: 4px !important;
+.kal-jadwal .flatpickr-current-month {
+    margin-top: 0px !important;
 }
 
 .kalender span.flatpickr-weekday {
@@ -1301,7 +1393,9 @@ button.tutup {
 }
 
 .btn-batal,
-.btn-kirim, .modal-actions button,.modal-actions-laporan button {
+.btn-kirim,
+.modal-actions button,
+.modal-actions-laporan button {
     background: #002B5B;
     color: white;
     padding: 10px 28px;
@@ -1445,6 +1539,17 @@ button.tutup {
     border-radius: 10px;
     padding: 10px;
     width: 30%;
+}
+
+.search-tambah .search {
+    display: flex;
+    justify-content: left;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid #06294D;
+    border-radius: 10px;
+    padding: 10px;
+    width: 100%;
 }
 
 /* jadwal */
@@ -1730,7 +1835,8 @@ button.tutup {
     gap: 10px;
 }
 
-button.btn-tambah-konselor#openModal, .btn-tambah-admin {
+button.btn-tambah-konselor#openModal,
+.btn-tambah-admin {
     border: none;
     background: #00244B;
     color: #ffffff;
@@ -1738,10 +1844,27 @@ button.btn-tambah-konselor#openModal, .btn-tambah-admin {
     font-weight: 400;
     padding: 10px;
     border-radius: 10px;
-    width: 30%;
+    width: 100%;
 }
 
-.form-tambah input, #formTambahKonseling input, #formTambahKonseling select, #formTambahKonseling textarea, .modal-admin input, .modal-admin select, .modal-admin textarea {
+.search-tambah .filter {
+    width: 60%;
+}
+
+.search-tambah .right-sec {
+    width: 40%;
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.form-tambah input,
+#formTambahKonseling input,
+#formTambahKonseling select,
+#formTambahKonseling textarea,
+.modal-admin input,
+.modal-admin select,
+.modal-admin textarea {
     border: 1px solid #D0D3D9;
     background: #FFFFFF;
     border-radius: 10px;

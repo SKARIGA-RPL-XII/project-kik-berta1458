@@ -10,10 +10,33 @@
         <div class="row">
             <div class="col-md-12">
                 <div class="search-tambah">
+                    <div class="filter">
+                        <input type="date" id="filterTanggal" class="date-picker" required>
+
+                        <select id="filterKategori">
+                            <option value="" selected disabled>Pilih Kategori</option>
+                            <option value="Akademik">Akademik</option>
+                            <option value="Peribadi">Peribadi</option>
+                            <option value="Sosial">Sosial</option>
+                            <option value="Karir">Karir</option>
+                        </select>
+
+                        <select name="filterKonselor" id="filterKonselor">
+                            <option value="" selected disabled>Pilih Konselor</option>
+                            @foreach($konselor as $k)
+                                <option value="{{ $k->id }}">{{ $k->nama }}</option>
+                            @endforeach
+                        </select>
+
+                        <button>Terapkan</button>
+                        <button id="reset">Reset</button>
+                    </div>
+                    <div class="right-sec">
                     <button class="btn-tambah-admin" id="openModalKonseling">
                         + Tambah Konseling
                     </button>
                     <input class="search" type="text" placeholder="Cari...">
+                    </div>
                 </div>
             </div>
         </div>
@@ -24,6 +47,7 @@
                     <tr>
                         <th>Tanggal Konseling</th>
                         <th>Nama Siswa</th>
+                        <th>Konselor</th>
                         <th>Kategori</th>
                         <th>Status</th>
                         <th>Aksi</th>
@@ -34,6 +58,7 @@
                     <tr>
                         <td>{{ \Carbon\Carbon::parse($lap->tanggal_pengajuan)->translatedFormat('d F Y')}}</td>
                         <td>{{ $lap->siswa->nama }}</td>
+                        <td>{{ $lap->konselor->nama }}</td>
                         <td>{{ $lap->kategori->nama_kategori }}</td>
                         <td>@if ($lap->status == 'menunggu')
                             <span class="menunggu">Menunggu</span>
@@ -57,6 +82,15 @@
                                 <i class="fa-solid fa-folder"></i>
                             </button>
 
+                            {{-- ✅ HANYA MENUNGGU --}}
+                            @if($lap->status === 'menunggu')
+                            <button class="edit-konselor"
+                                data-id="{{ $lap->id }}"
+                                data-konselor="{{ $lap->id_konselor }}">
+                                <i class="fa-solid fa-user"></i>
+                            </button>
+                            @endif
+
                             @if($lap->status === 'ditolak')
                             <button class="catatan"
                                 data-alasan="{{ $lap->alasan_penolakan }}">
@@ -69,6 +103,7 @@
                                 data-id="{{ $lap->id }}"
                                 data-nama="{{ $lap->siswa->nama }}"
                                 data-kelas="{{ $lap->siswa->kelas }}"
+                                data-konselor="{{ $lap->konselor->nama }}"
                                 data-kategori="{{ $lap->kategori->nama_kategori }}"
                                 data-tanggal="{{ $lap->tanggal_pengajuan }}"
                                 data-permasalahan="{{ $lap->deskripsi_masalah }}"
@@ -77,10 +112,6 @@
                                 <i class="fa-solid fa-pen-to-square"></i>
                             </button>
                             @endif
-                            <button class="aksi-admin delete"
-                                data-id="{{ $lap->id}}">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
                         </td>
 
                     </tr>
@@ -100,7 +131,53 @@
     </div>
 </section>
 
-<!-- modal laporan -->
+<!-- modal edit konselor -->
+<div id="modalEditKonselor" class="modal-overlay" style="display:none;">
+    <div class="modal-box modal-admin">
+        <div class="modal-header-laporan">
+            <h2>Edit Konselor</h2>
+        </div>
+        <form id="formEditKonselor">
+            @csrf
+
+            <input type="hidden" id="editId" name="id_pengajuan">
+
+            <label>Konselor</label><br>
+            <select name="id_konselor" required>
+                <option value="">Pilih Konselor</option>
+                @foreach($konselor as $k)
+                <option value="{{ $k->id }}">{{ $k->nama }}</option>
+                @endforeach
+            </select>
+
+            <br><br>
+
+            <div class="modal-actions" style="display:flex; justify-content: center; gap:10px;">
+                <button type="button" id="batalKonselor">Batal</button>
+                <button type="button" id="simpanKonselor">Simpan</button>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+<!-- modal penolakan -->
+<div id="modalCatatan" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h2>Alasan Penolakan</h2>
+        </div>
+
+        <div class="modal-content">
+            <p id="isiCatatan"></p>
+        </div>
+
+        <div class="modal-actions">
+            <button id="closeModalCatatan">Tutup</button>
+        </div>
+    </div>
+</div>
+
 <!-- modal laporan -->
 <div id="modalIsiLap" class="modal-overlay" style="display:none;">
     <div class="modal-box modal-laporan">
@@ -121,6 +198,10 @@
             </div>
 
             <table class="table-laporan">
+                <tr>
+                    <th>Konselor</th>
+                    <td id="lapKonselor"></td>
+                </tr>
                 <tr>
                     <th>Kategori</th>
                     <td id="lapKategori"></td>
@@ -151,6 +232,12 @@
                             <button type="button" onclick="formatText('bold')"><b>B</b></button>
                             <button type="button" onclick="formatText('italic')"><i>I</i></button>
                             <button type="button" onclick="formatText('underline')"><u>U</u></button>
+                            <button type="button" onclick="formatText('insertUnorderedList')">
+                                <i class="fa-solid fa-list"></i>
+                            </button>
+                            <button type="button" onclick="formatText('insertOrderedList')">
+                                <i class="fa-solid fa-list-ol"></i>
+                            </button>
                         </div>
 
                         <div id="lapCatatan" class="textarea-laporan editor"
@@ -164,8 +251,15 @@
                     <th>Catatan</th>
                     <td>
                         <div class="editor-toolbar">
-                            <button type="button" onclick="formatTextPesan('bold')"><b>B</b></button>
-                            <button type="button" onclick="formatTextPesan('italic')"><i>I</i></button>
+                            <button type="button" onclick="formatText('bold')"><b>B</b></button>
+                            <button type="button" onclick="formatText('italic')"><i>I</i></button>
+                            <button type="button" onclick="formatText('underline')"><u>U</u></button>
+                            <button type="button" onclick="formatText('insertUnorderedList')">
+                                <i class="fa-solid fa-list"></i>
+                            </button>
+                            <button type="button" onclick="formatText('insertOrderedList')">
+                                <i class="fa-solid fa-list-ol"></i>
+                            </button>
                         </div>
 
                         <div id="pesanSiswa" class="textarea-laporan editor"
@@ -249,6 +343,17 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.catatan').forEach(btn => {
+            btn.onclick = () => {
+                document.getElementById('modalCatatan').style.display = 'flex';
+                document.getElementById('isiCatatan').textContent = btn.dataset.alasan || 'Tidak ada alasan';
+            };
+        });
+
+        // tombol tutup
+        document.getElementById('closeModalCatatan').onclick = () => {
+            document.getElementById('modalCatatan').style.display = 'none';
+        };
 
         // MODAL TAMBAH KONSELING
         const modalTambah = document.getElementById('modalTambahKonseling');
@@ -276,6 +381,24 @@
                 .catch(() => alert('Gagal tambah'));
         };
 
+        // MODAL EDIT KONSELING
+
+
+        const modalEdit = document.getElementById('modalEditKonselor');
+        const selectKonselor = document.querySelector('select[name="id_konselor"]');
+        const inputId = document.getElementById('editId');
+
+        document.querySelectorAll('.edit-konselor').forEach(btn => {
+            btn.onclick = () => {
+                modalEdit.style.display = 'flex';
+
+                inputId.value = btn.dataset.id;
+                selectKonselor.value = btn.dataset.konselor || '';
+            };
+        });
+        document.getElementById('batalKonselor').onclick = function() {
+            document.getElementById('modalEditKonselor').style.display = 'none';
+        };
 
         // MODAL DESKRIPSI
         document.querySelectorAll('.detail').forEach(btn => {
@@ -285,11 +408,29 @@
             };
         });
 
+
         document.getElementById('closeModalDetail').onclick = () => {
             document.getElementById('modalDetail').style.display = 'none';
         };
 
+        document.getElementById('simpanKonselor').onclick = function() {
 
+            let formData = new FormData(document.getElementById('formEditKonselor'));
+
+            fetch('/admin/konseling/update-konselor', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(res => {
+                    alert(res.message);
+                    location.reload();
+                })
+                .catch(() => alert('Gagal update konselor'));
+        };
         // MODAL LAPORAN
         let mode = 'create';
         let foto = null;
@@ -310,6 +451,7 @@
                 document.getElementById('laporanId').value = btn.dataset.id;
                 document.getElementById('lapNama').textContent = btn.dataset.nama;
                 document.getElementById('lapKelas').textContent = btn.dataset.kelas;
+                document.getElementById('lapKonselor').textContent = btn.dataset.konselor;
                 document.getElementById('lapKategori').textContent = btn.dataset.kategori;
                 document.getElementById('lapPermasalahan').textContent = btn.dataset.permasalahan;
                 document.getElementById('lapTanggal').textContent = btn.dataset.tanggal;
@@ -330,10 +472,12 @@
                     mode = 'view';
 
                     catatan.innerHTML = hasil;
-                    catatan.contentEditable = false;
-
                     pesan.innerHTML = pesanLama || '';
+
+                    catatan.contentEditable = false;
                     pesan.contentEditable = false;
+
+                    document.querySelectorAll('.editor-toolbar').forEach(el => el.style.display = 'none');
 
                     btnSubmit.textContent = 'Edit';
                     fileInput.style.display = 'none';
@@ -341,10 +485,12 @@
                     mode = 'create';
 
                     catatan.innerHTML = '';
-                    catatan.contentEditable = true;
-
                     pesan.innerHTML = '';
+
+                    catatan.contentEditable = true;
                     pesan.contentEditable = true;
+
+                    document.querySelectorAll('.editor-toolbar').forEach(el => el.style.display = 'flex');
 
                     btnSubmit.textContent = 'Simpan';
                     fileInput.style.display = 'block';
@@ -397,6 +543,8 @@
 
                 catatan.contentEditable = true;
                 pesan.contentEditable = true;
+
+                document.querySelectorAll('.editor-toolbar').forEach(el => el.style.display = 'flex');
 
                 this.textContent = 'Update';
                 document.getElementById('buktiFile').style.display = 'block';
@@ -493,27 +641,5 @@
             previewPDF.src = url;
             previewPDF.style.display = 'block';
         }
-    });
-
-    document.querySelectorAll('.delete').forEach(btn => {
-        btn.addEventListener('click', function() {
-
-            let id = this.dataset.id;
-
-            if (!confirm('Yakin hapus data ini?')) return;
-
-            fetch(`/admin/konseling/${id}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                    }
-                })
-                .then(res => res.json())
-                .then(res => {
-                    alert(res.message);
-                    location.reload();
-                })
-                .catch(() => alert('Gagal hapus'));
-        });
     });
 </script>

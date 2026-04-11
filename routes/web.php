@@ -12,17 +12,15 @@ use App\Http\Controllers\SiswaController;
 
 Route::get('/', fn() => view('index'));
 
-Route::get('/profil-siswa', fn() => view('siswa/profile'));
-Route::get('/riwayat-konseling', fn() => view('siswa/riwayat'));
-
 Route::get('/login', [AuthController::class, 'login'])->name('login');
 Route::post('/login', [AuthController::class, 'authenticate'])->name('login.proses');
 
 Route::middleware(['auth.custom', 'role:siswa'])->group(function () {
-    Route::get('/dashboard-siswa', function () {return view('siswa.dashboard');});
+    Route::get('/dashboard-siswa', [SiswaController::class, 'dashboard']);
     Route::get('/pengajuan-konseling', [SiswaController::class, 'pengajuan']);
     Route::post('/siswa/pengajuan/store', [SiswaController::class, 'storePengajuan']);
     Route::get('/riwayat-konseling', [SiswaController::class, 'riwayat']);
+    Route::get('/profil-siswa', [SiswaController::class, 'profile']);
 });
 
 Route::middleware(['auth.custom', 'role:konselor'])->group(function () {
@@ -48,6 +46,7 @@ Route::middleware(['auth.custom', 'role:admin'])->group(function () {
     Route::post('/admin/konseling/store', [AdminController::class, 'storeKonseling']);
     Route::delete('/admin/konseling/{id}', [AdminController::class, 'deleteKonseling']);
     Route::post('/admin/laporan/simpan', [AdminController::class, 'simpanLaporan']);
+    Route::post('/admin/konseling/update-konselor', [AdminController::class, 'updateKonselor']);
 });
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');

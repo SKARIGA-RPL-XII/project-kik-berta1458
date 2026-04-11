@@ -22,6 +22,7 @@ class SiswaController extends Controller
 
             $request->validate([
                 'id_kategori' => 'required',
+                'id_konselor' => 'required',
                 'tanggal_pengajuan' => 'required|date',
                 'deskripsi_masalah' => 'nullable'
             ]);
@@ -31,6 +32,7 @@ class SiswaController extends Controller
             PengajuanKonseling::create([
                 'id_siswa' => $user->siswa->id,
                 'id_kategori' => $request->id_kategori,
+                'id_konselor' => $request->id_konselor,
                 'tanggal_pengajuan' => $request->tanggal_pengajuan,
                 'deskripsi_masalah' => $request->deskripsi_masalah ?? '-',
                 'status' => 'menunggu'
@@ -49,14 +51,25 @@ class SiswaController extends Controller
     public function pengajuan()
     {
         $kategori = \App\Models\KategoriPermasalahan::all();
-
         $user = \App\Models\User::find(session('id_user'));
+        $konselor = \App\Models\Konselor::all();
+        $query = \App\Models\PengajuanKonseling::with('kategori')
+            ->where('id_siswa', $user->siswa->id);
 
-        $pengajuan = \App\Models\PengajuanKonseling::with('kategori')
-            ->where('id_siswa', $user->siswa->id)
-            ->latest()
-            ->get();
-        return view('siswa.pengajuan', compact('kategori', 'pengajuan'));
+        // 🔍 FILTER TANGGAL
+        if (request('tanggal')) {
+            $query->whereDate('tanggal_pengajuan', request('tanggal'));
+        }
+
+        // 🔍 FILTER KATEGORI
+        if (request('kategori')) {
+            $query->whereHas('kategori', function ($q) {
+                $q->where('nama_kategori', request('kategori'));
+            });
+        }
+
+        $pengajuan = $query->latest()->get();
+        return view('siswa.pengajuan', compact('kategori', 'pengajuan', 'konselor'));
     }
 
     public function riwayat()
@@ -65,11 +78,83 @@ class SiswaController extends Controller
 
         $user = \App\Models\User::find(session('id_user'));
 
-        $pengajuan = \App\Models\PengajuanKonseling::with(['kategori','laporan'])
+        $query = \App\Models\PengajuanKonseling::with(['kategori', 'laporan', 'konselor'])
             ->where('id_siswa', $user->siswa->id)
-            ->whereIn('status', ['selesai', 'menunggu', 'ditolak', 'berlangsung', 'dijadwalkan'])
+            ->whereIn('status', ['selesai', 'menunggu', 'ditolak', 'berlangsung', 'dijadwalkan']);
+
+        // FILTER TANGGAL
+        if (request('tanggal')) {
+            $query->whereDate('tanggal_pengajuan', request('tanggal'));
+        }
+
+        // FILTER KATEGORI
+        if (request('kategori')) {
+            $query->whereHas('kategori', function ($q) {
+                $q->where('nama_kategori', request('kategori'));
+            });
+        }
+
+        //SEARCH (nama konselor)
+        if (request('search')) {
+            $search = request('search');
+
+            $query->whereHas('konselor', function ($q) use ($search) {
+                $q->where('nama', 'like', "%$search%");
+            });
+        }
+
+        $pengajuan = $query->latest()->get();
+        return view('siswa.riwayat', compact('kategori', 'pengajuan', 'user'));
+    }
+
+    public function profile()
+    {
+        $user = \App\Models\User::find(session('id_user'));
+
+        if (!$user || !$user->siswa) {
+            return redirect('/login');
+        }
+
+        $siswa = $user->siswa;
+
+        return view('siswa.profile', compact('siswa'));
+    }
+
+    public function dashboard()
+    {
+        $user = \App\Models\User::find(session('id_user'));
+
+        if (!$user || !$user->siswa) {
+            return redirect('/login');
+        }
+
+        $siswaId = $user->siswa->id;
+
+        // total pengajuan
+        $total = \App\Models\PengajuanKonseling::where('id_siswa', $siswaId)->count();
+
+        // aktif (menunggu + berlangsung + dijadwalkan)
+        $aktif = \App\Models\PengajuanKonseling::where('id_siswa', $siswaId)
+            ->whereIn('status', ['menunggu', 'berlangsung', 'dijadwalkan'])
+            ->count();
+
+        // selesai
+        $selesai = \App\Models\PengajuanKonseling::where('id_siswa', $siswaId)
+            ->where('status', 'selesai')
+            ->count();
+
+        // data bulan ini
+        $bulanIni = \App\Models\PengajuanKonseling::with('kategori')
+            ->where('id_siswa', $siswaId)
+            ->whereMonth('tanggal_pengajuan', now()->month)
             ->latest()
             ->get();
-        return view('siswa.riwayat', compact('kategori', 'pengajuan', 'user'));
+
+        return view('siswa.dashboard', compact(
+            'total',
+            'aktif',
+            'selesai',
+            'bulanIni'
+        ));
     }
 }

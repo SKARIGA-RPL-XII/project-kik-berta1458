@@ -10,10 +10,34 @@
         <div class="row">
             <div class="col-md-12">
                 <div class="search-tambah">
-                    <button class="btn-tambah-konselor" id="openModal">
-                        + Tambah Konselor
-                    </button>
-                    <input class="search" type="text" placeholder="Cari...">
+                    <div class="filter">
+                        <input type="date" id="filterTanggal" class="date-picker" required>
+
+                        <select id="filterKategori">
+                            <option value="" selected disabled>Pilih Kategori</option>
+                            <option value="Akademik">Akademik</option>
+                            <option value="Peribadi">Peribadi</option>
+                            <option value="Sosial">Sosial</option>
+                            <option value="Karir">Karir</option>
+                        </select>
+
+                        <select name="filterKonselor" id="filterKonselor">
+                            <option value="" selected disabled>Pilih Konselor</option>
+                            @foreach($konselor as $k)
+                            <option value="{{ $k->id }}">{{ $k->nama }}</option>
+                            @endforeach
+                        </select>
+
+                        <button>Terapkan</button>
+                        <button id="reset">Reset</button>
+                    </div>
+                    <div class="right-sec">
+
+                        <button class="btn-tambah-konselor" id="openModal">
+                            + Tambah Konselor
+                        </button>
+                        <input class="search" type="text" placeholder="Cari...">
+                    </div>
                 </div>
             </div>
         </div>
@@ -24,7 +48,6 @@
                     <tr>
                         <th>Nama</th>
                         <th>NIP</th>
-                        <th>Password</th>
                         <th>Aksi</th>
                     </tr>
                 </thead>
@@ -33,7 +56,6 @@
                     <tr>
                         <td>{{ $k->nama }}</td>
                         <td>{{ $k->nip }}</td>
-                        <td>p</td>
                         <td>
                             <button
                                 class="aksi-admin edit"

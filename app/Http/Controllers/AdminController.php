@@ -145,14 +145,15 @@ class AdminController extends Controller
             ->whereDate('tanggal_pengajuan', Carbon::today())
             ->update(['status' => 'berlangsung']);
 
-        $laporan = PengajuanKonseling::with(['siswa', 'kategori', 'laporan'])
+        $laporan = PengajuanKonseling::with(['siswa', 'konselor', 'kategori', 'laporan'])
             ->orderBy('tanggal_pengajuan', 'desc')
             ->get();
 
         $siswa = Siswa::all();
         $kategori = KategoriPermasalahan::all();
+        $konselor = Konselor::all();
 
-        return view('admin.konseling', compact('laporan', 'siswa', 'kategori'));
+        return view('admin.konseling', compact('laporan', 'siswa', 'konselor', 'kategori'));
     }
     public function storeKonseling(Request $request)
     {
@@ -229,6 +230,30 @@ class AdminController extends Controller
                 'message' => 'ERROR: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    public function updateKonselor(Request $request)
+    {
+        $request->validate([
+            'id_pengajuan' => 'required',
+            'id_konselor' => 'required'
+        ]);
+
+        $pengajuan = PengajuanKonseling::findOrFail($request->id_pengajuan);
+
+        // 🚨 PROTEKSI STATUS
+        if ($pengajuan->status !== 'menunggu') {
+            return response()->json([
+                'message' => 'Hanya pengajuan dengan status menunggu yang bisa diubah!'
+            ], 403);
+        }
+
+        $pengajuan->id_konselor = $request->id_konselor;
+        $pengajuan->save();
+
+        return response()->json([
+            'message' => 'Konselor berhasil diganti'
+        ]);
     }
 
     public function deleteKonseling($id)

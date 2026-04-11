@@ -14,15 +14,17 @@
             <div class="col-md-12 ">
                 <div class="filter-wrap">
                     <div class="filter">
-                        <input type="date" id="filterTanggal" class="date-picker" required>
+                        <input type="date" id="filterTanggal" value="{{ request('tanggal') }}">
                         <select id="filterKategori">
-                            <option value="" selected disabled>Pilih Kategori</option>
-                            <option value="Akademik">Akademik</option>
-                            <option value="Pribadi">Pribadi</option>
-                            <option value="Sosial">Sosial</option>
-                            <option value="Karir">Karir</option>
+                            <option value="">Pilih Kategori</option>
+                            @foreach($kategori as $k)
+                            <option value="{{ $k->nama_kategori }}"
+                                {{ request('kategori') == $k->nama_kategori ? 'selected' : '' }}>
+                                {{ $k->nama_kategori }}
+                            </option>
+                            @endforeach
                         </select>
-                        <button>Terapkan</button>
+                        <button id="btnFilter">Terapkan</button>
                         <button id="reset">Reset</button>
                     </div>
                     <div class="filter-right">
@@ -92,14 +94,22 @@
                         </form>
                     </div>
                     <div class="col-md-6">
+                        <label>Pilih Konselor</label><br>
+                        <select name="id_konselor" required>
+                            <option value="">-- Pilih Konselor --</option>
+                            @foreach($konselor as $k)
+                            <option value="{{ $k->id }}">{{ $k->nama }}</option>
+                            @endforeach
+                        </select>
+                        <br><br>
                         <label for="">Tanggal Konseling</label>
-                        <input type="text" id="tanggal_konsultasi" class="form-control">
+                        <input type="text" id="tanggal_konsultasi" class="form-control kal-jadwal">
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-md-12 btn-ajuan text-center">
                         <button id="btnBatal">Batal</button>
-                        <button class="submit-btn">Kirim</button>
+                        <button type="submit" class="submit-btn">Kirim</button>
                     </div>
                 </div>
             </div>
@@ -119,6 +129,17 @@
         }
     });
 
+    document.getElementById('btnFilter').onclick = function() {
+        const tanggal = document.getElementById('filterTanggal').value;
+        const kategori = document.getElementById('filterKategori').value;
+
+        let url = new URL(window.location.href);
+
+        if (tanggal) url.searchParams.set('tanggal', tanggal);
+        if (kategori) url.searchParams.set('kategori', kategori);
+
+        window.location.href = url.toString();
+    };
     const btnTambah = document.querySelector('.btn-tambah-ajuan');
     const popup = document.getElementById('popupPengajuan');
     const btnBatal = document.getElementById('btnBatal');
@@ -174,42 +195,44 @@
     });
 
     resetBtn.addEventListener('click', () => {
-        container.innerHTML = '';
-        tanggal.value = '';
-        kategori.value = '';
+        window.location.href = window.location.pathname;
     });
 
     document.getElementById('formPengajuan').onsubmit = function(e) {
         e.preventDefault();
 
+        let formData = new FormData(this);
+
         const tanggal = document.getElementById('tanggal_hidden').value;
+        const idKonselor = document.querySelector('[name="id_konselor"]').value;
 
         if (!tanggal) {
             alert('Pilih tanggal dulu ya!');
             return;
         }
 
-        let formData = new FormData(this);
+        if (!idKonselor) {
+            alert('Pilih konselor dulu!');
+            return;
+        }
+
+        // ⬇️ ini yang penting (ambil dari luar form)
+        formData.append('id_konselor', idKonselor);
 
         fetch('/siswa/pengajuan/store', {
                 method: 'POST',
-                credentials: 'same-origin',
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                 },
                 body: formData
             })
-            .then(async res => {
-                let data = await res.json();
-                if (!res.ok) throw data;
-                return data;
-            })
+            .then(res => res.json())
             .then(res => {
                 alert(res.message);
                 location.reload();
             })
-            .catch(err => {
-                alert(err.message || 'Gagal mengajukan');
+            .catch(() => {
+                alert('Gagal mengajukan');
             });
     };
 </script>

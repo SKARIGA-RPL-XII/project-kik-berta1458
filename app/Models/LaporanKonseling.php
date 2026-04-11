@@ -14,12 +14,12 @@ class LaporanKonseling extends Model
     protected $fillable = [
         'id_pengajuan',
         'hasil_catatan',
+        'pesan_siswa',
         'bukti_file',
-        'pesan_siswa'
     ];
 
     public function pengajuan()
     {
-        return $this->belongsTo(PengajuanKonseling::class);
+        return $this->belongsTo(\App\Models\PengajuanKonseling::class, 'id_pengajuan');
     }
 }

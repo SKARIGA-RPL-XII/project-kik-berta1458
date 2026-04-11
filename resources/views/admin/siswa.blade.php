@@ -10,10 +10,30 @@
         <div class="row">
             <div class="col-md-12">
                 <div class="search-tambah">
-                    <button class="btn-tambah-konselor" id="openModal">
-                        + Tambah Siswa
-                    </button>
-                    <input class="search" type="text" placeholder="Cari konselor...">
+                    <div class="filter">
+
+                        <select id="filterKelas">
+                            <option value="" selected disabled>Pilih Kelas</option>
+                            <option value="X">X</option>
+                            <option value="XI">XI</option>
+                            <option value="XII">XII</option>
+                        </select>
+
+                        <select name="filterjurusan" id="filterJurusan">
+                            <option value="" selected disabled>Pilih Jurusan</option>
+                            <option value="IPA">IPA</option>
+                            <option value="IPS">IPS</option>
+                        </select>
+
+                        <button>Terapkan</button>
+                        <button id="reset">Reset</button>
+                    </div>
+                    <div class="right-sec">
+                        <button class="btn-tambah-konselor" id="openModal">
+                            + Tambah Siswa
+                        </button>
+                        <input class="search" type="text" placeholder="Cari konselor...">
+                    </div>
                 </div>
             </div>
         </div>
@@ -26,7 +46,6 @@
                         <th>Kelas</th>
                         <th>Jurusan</th>
                         <th>NIS</th>
-                        <th>Password</th>
                         <th>Aksi</th>
                     </tr>
                 </thead>
@@ -37,7 +56,6 @@
                         <td>{{ $s->kelas }}</td>
                         <td>{{ $s->jurusan }}</td>
                         <td>{{ $s->nis }}</td>
-                        <td>{{ $s->password }}</td>
                         <td>
                             <button
                                 class="aksi-admin edit"
@@ -191,7 +209,7 @@
             modal.style.display = 'none';
         }
     });
-    
+
     const modalEditSiswa = document.getElementById('modalEditSiswa');
     const closeEditSiswa = document.getElementById('closeEditSiswa');
 

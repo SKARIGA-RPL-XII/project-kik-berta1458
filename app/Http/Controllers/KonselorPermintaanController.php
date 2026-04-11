@@ -11,11 +11,13 @@ class KonselorPermintaanController extends Controller
 {
     public function index(Request $request)
     {
+        $konselor = \App\Models\Konselor::where('id_user', session('id_user'))->first();
         $tanggal = $request->query('tanggal');
 
         $data = PengajuanKonseling::with(['siswa', 'kategori'])
             ->when($tanggal, fn($q) => $q->whereDate('tanggal_pengajuan', $tanggal))
             ->where('status', 'menunggu')
+            ->where('id_konselor', $konselor->id)
             ->orderBy('tanggal_pengajuan', 'asc')
             ->get();
 
@@ -41,14 +43,12 @@ class KonselorPermintaanController extends Controller
     {
         $pengajuan = PengajuanKonseling::findOrFail($id);
 
+        $user = \App\Models\User::find(session('id_user'));
+
         $pengajuan->status = 'dijadwalkan';
+        $pengajuan->id_konselor = $user->konselor->id; // 🔥 WAJIB
         $pengajuan->save();
 
-        JadwalKonseling::create([
-            'id_pengajuan' => $pengajuan->id,
-            'tanggal_konseling' => $pengajuan->tanggal_pengajuan, // atau field lain kalau ada
-        ]);
-        
         return response()->json([
             'success' => true,
             'message' => "Pengajuan berhasil diterima!"

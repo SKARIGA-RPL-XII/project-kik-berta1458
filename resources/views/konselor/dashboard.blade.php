@@ -55,7 +55,7 @@
     </div>
 </section>
 
-<section class="kalender kal-jadwal">
+<section class="kalender kal-jadwal-konselor">
     <div class="container">
         <div class="row">
             <div class="col-md-12">

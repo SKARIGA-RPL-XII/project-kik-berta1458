@@ -14,17 +14,19 @@
             <div class="col-md-12 ">
                 <div class="filter-wrap">
                     <div class="filter">
-                        <input type="date" id="filterTanggal" class="date-picker" required>
+                        <input type="date" id="filterTanggal" value="{{ request('tanggal') }}">
 
                         <select id="filterKategori">
-                            <option value="" selected disabled>Pilih Kategori</option>
-                            <option value="Akademik">Akademik</option>
-                            <option value="Peribadi">Peribadi</option>
-                            <option value="Sosial">Sosial</option>
-                            <option value="Karir">Karir</option>
+                            <option value="">Pilih Kategori</option>
+                            @foreach($kategori as $k)
+                            <option value="{{ $k->nama_kategori }}"
+                                {{ request('kategori') == $k->nama_kategori ? 'selected' : '' }}>
+                                {{ $k->nama_kategori }}
+                            </option>
+                            @endforeach
                         </select>
 
-                        <button>Terapkan</button>
+                        <button id="btnFilter">Terapkan</button>
                         <button id="reset">Reset</button>
                     </div>
                     <!-- <div class="search"> -->
@@ -41,6 +43,7 @@
                         <thead>
                             <tr>
                                 <th>Tanggal Konseling</th>
+                                <th>Konselor</th>
                                 <th>Kategori</th>
                                 <th>Status</th>
                                 <th>Hasil</th>
@@ -50,15 +53,24 @@
                             @forelse($pengajuan as $item)
                             <tr>
                                 <td>{{ \Carbon\Carbon::parse($item->tanggal_pengajuan)->format('d M Y') }}</td>
+                                <td>{{ $item->konselor->nama ?? '-' }}</td>
                                 <td>{{ $item->kategori->nama_kategori }}</td>
                                 <td> <span class="{{ $item->status }}">
                                         {{ ucfirst($item->status) }}
                                     </span></td>
-                                <td><a class="detail" data-nama="{{ $user->siswa->nama ?? '-' }}"
+                                <td>
+                                    <a class="detail" data-nama="{{ $user->siswa->nama ?? '-' }}"
                                         data-kelas="{{ $user->siswa->kelas ?? '-' }}"
                                         data-tanggal="{{ \Carbon\Carbon::parse($item->tanggal_pengajuan)->format('d M Y') }}"
                                         data-catatan="{{ $item->laporan->pesan_siswa ?? 'Belum ada catatan' }}"
-                                        href="#"><i class="fa-solid fa-folder"></i></a></td>
+                                        href="#"><i class="fa-solid fa-folder"></i></a>
+                                    @if($item->status === 'ditolak')
+                                    <button class="catatan"
+                                        data-alasan="{{ $item->alasan_penolakan }}">
+                                        <i class="fa-solid fa-clipboard-list"></i>
+                                    </button>
+                                    @endif
+                                </td>
                             </tr>
                             @empty
                             <tr>
@@ -76,6 +88,22 @@
         </div>
     </div>
 </section>
+<!-- modal penolakan -->
+<div id="modalCatatan" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h2>Alasan Penolakan</h2>
+        </div>
+
+        <div class="modal-content">
+            <p id="isiCatatan"></p>
+        </div>
+
+        <div class="modal-actions">
+            <button id="closeModalCatatan">Tutup</button>
+        </div>
+    </div>
+</div>
 
 <div class="overlay" id="popupDetail">
     <div class="popup-content-detail">
@@ -112,6 +140,29 @@
 @include('layout/footer')
 
 <script>
+    document.querySelector('.search').addEventListener('keyup', function() {
+        let value = this.value.toLowerCase();
+
+        document.querySelectorAll('tbody tr').forEach(row => {
+            row.style.display = row.innerText.toLowerCase().includes(value) ?
+                '' :
+                'none';
+        });
+    });
+    document.getElementById('btnFilter').onclick = function() {
+        const tanggal = document.getElementById('filterTanggal').value;
+        const kategori = document.getElementById('filterKategori').value;
+        const search = document.querySelector('.search').value;
+
+        let url = new URL(window.location.href);
+
+        if (tanggal) url.searchParams.set('tanggal', tanggal);
+        if (kategori) url.searchParams.set('kategori', kategori);
+        if (search) url.searchParams.set('search', search);
+
+        window.location.href = url.toString();
+    };
+
     const btnDetails = document.querySelectorAll('.detail');
     const popup = document.getElementById('popupDetail');
     const btnClose = document.getElementById('tutup');
@@ -180,8 +231,17 @@
     });
 
     resetBtn.addEventListener('click', () => {
-        container.innerHTML = '';
-        tanggal.value = '';
-        kategori.value = '';
+        window.location.href = window.location.pathname;
     });
+    document.querySelectorAll('.catatan').forEach(btn => {
+        btn.onclick = () => {
+            document.getElementById('modalCatatan').style.display = 'flex';
+            document.getElementById('isiCatatan').textContent = btn.dataset.alasan || 'Tidak ada alasan';
+        };
+    });
+
+    // tombol tutup
+    document.getElementById('closeModalCatatan').onclick = () => {
+        document.getElementById('modalCatatan').style.display = 'none';
+    };
 </script>

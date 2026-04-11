@@ -1,12 +1,12 @@
 @include('layout/header')
 
 <section class="banner-siswa">
-<div class="container">
-    <div class="row">
-        <div class="col-md-12">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+            </div>
         </div>
     </div>
-</div>
 </section>
 <section class="info">
     <div class="container">
@@ -21,7 +21,7 @@
                             <span>2026</span>
                         </div>
                         <div class="isi">
-                            <h1>10 Kali</h1>
+                            <h1>{{ $total }} Kali</h1>
                             <p>Pada tahun ini</p>
                         </div>
                     </li>
@@ -33,7 +33,7 @@
                             <span>2026</span>
                         </div>
                         <div class="isi">
-                            <h1>10 Aktif</h1>
+                            <h1>{{ $aktif }} Aktif</h1>
                             <p>Pada tahun ini</p>
                         </div>
                     </li>
@@ -45,7 +45,7 @@
                             <span>2026</span>
                         </div>
                         <div class="isi">
-                            <h1>10 Sesi</h1>
+                            <h1>{{ $selesai }} Selesai</h1>
                             <p>Pada tahun ini</p>
                         </div>
                     </li>
@@ -61,7 +61,7 @@
             <div class="col-md-12">
                 <div class="title-body">
                     <h3>Konseling</h3>
-                    <h1>Konseling Pada Bulan Januari</h1>
+                    <h1>Konseling Pada Bulan {{ \Carbon\Carbon::now()->translatedFormat('F') }}</h1>
                 </div>
                 <div class="tabel">
                     <table>
@@ -73,16 +73,19 @@
                             </tr>
                         </thead>
                         <tbody>
+                            @forelse($bulanIni as $item)
                             <tr>
-                                <td>20 Desember 2026</td>
-                                <td>Karir</td>
-                                <td><span class="menunggu">Menunggu</span></td>
+                                <td>
+                                    {{ \Carbon\Carbon::parse($item->tanggal_pengajuan)->translatedFormat('d F Y') }}
+                                </td>
+                                <td>{{ $item->kategori->nama_kategori }}</td>
+                                <td><span class="status {{$item->status}}">{{ ucfirst($item->status) }}</span></td>
                             </tr>
+                            @empty
                             <tr>
-                                <td>07 Desember 2026</td>
-                                <td>Akademik</td>
-                                <td><span class="selesai">Selesai</span></td>
+                                <td colspan="3" style="text-align:center;">Tidak ada data bulan ini</td>
                             </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
@@ -100,12 +103,16 @@
         <div class="row">
             <div class="col-md-12">
                 <ul>
-                    <a href="#">
-                        <li>+ Ajukan Konseling
-                    </a></li>
-                    <a href="#">
-                        <li>Lihat Riwayat Konseling
-                    </a></li>
+                    <li>
+                        <a href="/pengajuan-konseling">
+                            + Ajukan Konseling
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/riwayat-konseling">
+                            Lihat Riwayat Konseling
+                        </a>
+                    </li>
                 </ul>
             </div>
         </div>
