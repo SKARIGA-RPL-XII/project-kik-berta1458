@@ -19,22 +19,24 @@
                             <option value="XII">XII</option>
                         </select>
 
-                        <select name="filterjurusan" id="filterJurusan">
-                            <option value="" selected disabled>Pilih Jurusan</option>
-                            <option value="IPA">IPA</option>
-                            <option value="IPS">IPS</option>
+                        <select id="filterJurusan">
+                            <option value="">Pilih Jurusan</option>
+                            @foreach($jurusanList as $j)
+                            <option value="{{ $j }}">{{ $j }}</option>
+                            @endforeach
                         </select>
 
-                        <button>Terapkan</button>
+                        <button id="btnFilter">Terapkan</button>
                         <button id="reset">Reset</button>
                     </div>
                     <div class="right-sec">
                         <button class="btn-tambah-konselor" id="openModal">
                             + Tambah Siswa
                         </button>
-                        <input class="search" type="text" placeholder="Cari konselor...">
+                        <input class="search" id="searchInput" type="text" placeholder="Cari konselor...">
                     </div>
                 </div>
+                <div class="selected-filter" id="selectedFilter"></div>
             </div>
         </div>
 
@@ -49,7 +51,7 @@
                         <th>Aksi</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="tableBody">
                     @forelse($siswa as $s)
                     <tr>
                         <td>{{ $s->nama }}</td>
@@ -90,9 +92,14 @@
             </table>
         </div>
         <div class="slide">
-            <p>kembali</p><span class="number">1</span>
-            <p>Berikutnya</p>
-        </div>
+                    <button onclick="prevPage()">
+                        <p>Kembali</p>
+                    </button>
+                    <span class="number" id="pageInfo"></span>
+                    <button onclick="nextPage()">
+                        <p>Berikutnya</p>
+                    </button>
+                </div>
     </div>
 </section>
 
@@ -192,6 +199,81 @@
 
 
 <script>
+    // APPLY FILTER
+    document.getElementById('btnFilter').onclick = function() {
+
+        let url = new URL(window.location.href);
+
+        const kelas = document.getElementById('filterKelas')?.value;
+        const jurusan = document.getElementById('filterJurusan')?.value;
+        const tanggal = document.getElementById('filterTanggal')?.value;
+        const kategori = document.getElementById('filterKategori')?.value;
+        const konselor = document.getElementById('filterKonselor')?.value;
+        const search = document.getElementById('searchInput')?.value;
+
+        if (kelas) url.searchParams.set('kelas', kelas);
+        if (jurusan) url.searchParams.set('jurusan', jurusan);
+        if (tanggal) url.searchParams.set('tanggal', tanggal);
+        if (kategori) url.searchParams.set('kategori', kategori);
+        if (konselor) url.searchParams.set('konselor', konselor);
+        if (search) url.searchParams.set('search', search);
+
+        window.location.href = url.toString();
+    };
+
+    // CHIP FILTER
+    const kelas = document.getElementById('filterKelas');
+    const jurusan = document.getElementById('filterJurusan');
+    const container = document.getElementById('selectedFilter');
+
+    function createChip(label, type) {
+        container.querySelectorAll(`.chip[data-type="${type}"]`)
+            .forEach(el => el.remove());
+
+        const chip = document.createElement('div');
+        chip.className = 'chip';
+        chip.dataset.type = type;
+
+        chip.innerHTML = `
+        ${label}
+        <span class="close">&times;</span>
+    `;
+
+        chip.querySelector('.close').onclick = () => {
+            chip.remove();
+
+            if (type === 'kelas') kelas.value = '';
+            if (type === 'jurusan') jurusan.value = '';
+        };
+
+        container.appendChild(chip);
+    }
+
+    // EVENT
+    kelas.addEventListener('change', () => {
+        if (!kelas.value) return;
+        createChip(kelas.value, 'kelas');
+    });
+
+    jurusan.addEventListener('change', () => {
+        if (!jurusan.value) return;
+        createChip(jurusan.value, 'jurusan');
+    });
+    // RESET
+    document.getElementById('reset').onclick = function() {
+        window.location.href = window.location.pathname;
+    };
+
+    // SEARCH REALTIME
+    document.getElementById('searchInput').addEventListener('keyup', function() {
+        let value = this.value.toLowerCase();
+
+        document.querySelectorAll('tbody tr').forEach(row => {
+            row.style.display = row.innerText.toLowerCase().includes(value) ?
+                '' :
+                'none';
+        });
+    });
     const modal = document.getElementById('modalKonselor');
     const openBtn = document.getElementById('openModal');
     const closeBtn = document.getElementById('closeModal');
@@ -236,4 +318,50 @@
     closeEditSiswa.addEventListener('click', function() {
         modalEditSiswa.style.display = 'none';
     });
+    //slide
+    let currentPage = 1;
+    let rowsPerPage = 10;
+
+    function showTablePage() {
+        const table = document.getElementById("tableBody");
+        const rows = table.getElementsByTagName("tr");
+
+        let totalRows = rows.length;
+        let totalPages = Math.ceil(totalRows / rowsPerPage);
+
+        let start = (currentPage - 1) * rowsPerPage;
+        let end = start + rowsPerPage;
+
+        for (let i = 0; i < totalRows; i++) {
+            if (i >= start && i < end) {
+                rows[i].style.display = "";
+            } else {
+                rows[i].style.display = "none";
+            }
+        }
+
+        document.getElementById("pageInfo").innerText = currentPage;
+    }
+
+    function nextPage() {
+        const rows = document.getElementById("tableBody").getElementsByTagName("tr");
+        let totalPages = Math.ceil(rows.length / rowsPerPage);
+
+        if (currentPage < totalPages) {
+            currentPage++;
+            showTablePage();
+        }
+    }
+
+    function prevPage() {
+        if (currentPage > 1) {
+            currentPage--;
+            showTablePage();
+        }
+    }
+
+    // jalankan pertama kali
+    window.onload = function() {
+        showTablePage();
+    };
 </script>

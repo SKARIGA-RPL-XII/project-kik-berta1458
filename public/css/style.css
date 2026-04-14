@@ -434,7 +434,8 @@ button.logout {
     margin-bottom: -70px;
 }
 
-.info ul {
+.info ul,
+.admin-dashboard ul {
     list-style: none;
     padding: 0;
     margin: 0;
@@ -442,7 +443,8 @@ button.logout {
     gap: 20px;
 }
 
-.info .summary-card ul li {
+.info .summary-card ul li,
+.admin-dashboard .summary-card ul li {
     background: #ffffff;
     border-radius: 10px;
     padding: 20px;
@@ -451,20 +453,23 @@ button.logout {
     box-shadow: 0px 4px 20px 0px #32323240;
 }
 
-.info .isi i {
+.info .isi i,
+.admin-dashboard .isi i {
     background: #00244B;
     color: #FFB200;
     padding: 10px;
     border-radius: 100%;
 }
 
-.info .isi h4 {
+.info .isi h4,
+.admin-dashboard .isi h4 {
     color: #000000;
     font-size: 16px;
     font-weight: 600;
 }
 
-.info .title {
+.info .title,
+.admin-dashboard .title {
     display: flex;
     align-items: center;
     justify-content: left;
@@ -479,25 +484,36 @@ button.logout {
     border-radius: 20px;
 }
 
-.info .isi {
+.summary-card .admin-dashboard span {
+    background: #00244B;
+    color: #FFB200;
+    padding: 0;
+    border-radius: 20px;
+}
+
+.info .isi,
+.admin-dashboard .isi {
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-.info .isi h1 {
+.info .isi h1,
+.admin-dashboard .isi h1 {
     font-size: 24px;
     font-weight: 500;
     color: #000000;
 }
 
-.info .isi p {
+.info .isi p,
+.admin-dashboard .isi p {
     font-size: 14px;
     font-weight: 400;
     color: #999999;
 }
 
-.info .isi:last-child {
+.info .isi:last-child,
+.admin-dashboard .isi:last-child {
     margin-top: 15px;
 }
 
@@ -529,6 +545,17 @@ button.logout {
     text-align: center;
 }
 
+.chart-box .title-body h3 {
+    color: #5A0010;
+    background: #5A00101A;
+    padding: 5px;
+    width: 50%;
+    margin: 0 auto 10px;
+    font-size: 18px;
+    font-weight: 600;
+    text-align: center;
+}
+
 .title-body h3 {
     color: #5A0010;
     background: #5A00101A;
@@ -553,7 +580,7 @@ button.logout {
     font-size: 18px;
     font-weight: 400;
     text-align: center;
-    margin: 0 auto 60px;
+    margin: 0 auto 30px;
     width: 60%;
 }
 
@@ -574,6 +601,13 @@ table .selesai {
     padding: 0;
     overflow: hidden;
     box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.chart-box {
+    padding: 30px;
+    box-shadow: 0px 4px 20px 0px #32323240;
+    border-radius: 20px;
+    margin-top: 30px;
 }
 
 table {
@@ -645,6 +679,11 @@ table .berlangsung {
     padding: 6px 14px;
     border-radius: 20px;
     display: inline-block;
+}
+
+.slide button {
+    border: none;
+    background: transparent;
 }
 
 .slide p {
@@ -797,6 +836,7 @@ table .berlangsung {
 .kal-jadwal .flatpickr-day.punya-jadwal {
     background: #00244B;
     color: #fff;
+    
 }
 
 .kal-jadwal .flatpickr-calendar.inline {
@@ -809,6 +849,8 @@ table .berlangsung {
     margin: 0 auto;
 }
 
+
+
 .kal-jadwal .dayContainer {
     width: 100%;
     text-align: center;
@@ -818,6 +860,8 @@ table .berlangsung {
 .kal-jadwal-konselor .flatpickr-day:hover {
     border-color: #00244B;
     width: 100%;
+    padding: 0 10px;
+    border-radius: 100%;
 }
 
 .flatpickr-current-month .numInputWrapper span.arrowUp:after {
@@ -843,6 +887,8 @@ table .berlangsung {
     background: #00244B !important;
     width: 100%;
     border-radius: 100%;
+    padding: 0 10px;
+
 }
 
 .flatpickr-current-month {
@@ -1229,8 +1275,8 @@ button.tutup {
     display: grid !important;
     grid-template-columns: repeat(7, 1fr) !important;
     text-align: center;
-    column-gap: 135px;
-    margin-left: 68px;
+    column-gap: 115px;
+    margin-left: 50px;
 }
 
 .kal-jadwal-konselor .flatpickr-current-month {
@@ -1242,6 +1288,7 @@ button.tutup {
 .kal-jadwal-konselor .flatpickr-days {
     width: 100% !important;
     margin: 0 auto;
+        padding: 0 10px !important;
 }
 
 /* HARI BIASA */
@@ -1272,7 +1319,8 @@ button.tutup {
 .kal-jadwal-konselor .flatpickr-day.punya-jadwal {
     background: #00244B;
     color: #FFFFFF !important;
-    font-weight: bold;
+    font-weight: 400;
+    border-radius: 100%;
 }
 
 /* ARROW BULAN */
@@ -1460,6 +1508,7 @@ button.tutup {
     border-radius: 10px;
     font-size: 14px;
     position: relative;
+    margin-right: 5px;
 }
 
 .date-picker::-webkit-datetime-edit {
@@ -1706,6 +1755,41 @@ button.tutup {
 
 .admin-dashboard {
     margin-top: 150px;
+}
+
+.kinerja-box {
+    background: #fff;
+    padding: 23px;
+    border-radius: 20px;
+    margin-top: 30px;
+    box-shadow: 0px 4px 20px 0px #32323240;
+}
+
+.kinerja-box .title-body h3 {
+    color: #5A0010;
+    background: #5A00101A;
+    padding: 5px;
+    width: 50%;
+    margin: 0 auto;
+    font-size: 18px;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.table-kinerja {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table-kinerja th,
+.table-kinerja td {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+.table-kinerja tr:hover {
+    background: #f5f5f5;
 }
 
 .admin-konseling {

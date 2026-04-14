@@ -59,17 +59,14 @@
         const openBtn = document.getElementById('openLogout');
         const closeBtn = document.getElementById('batalLogout');
 
-        // buka modal
         openBtn.onclick = () => {
             modal.style.display = 'flex';
         };
 
-        // tutup modal
         closeBtn.onclick = () => {
             modal.style.display = 'none';
         };
 
-        // klik luar modal = tutup
         modal.onclick = (e) => {
             if (e.target === modal) {
                 modal.style.display = 'none';

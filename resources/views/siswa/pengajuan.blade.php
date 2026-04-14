@@ -46,7 +46,7 @@
                                 <th>Status</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="tableBody">
                             @forelse($pengajuan as $item)
                             <tr>
                                 <td>{{ \Carbon\Carbon::parse($item->tanggal_pengajuan)->format('d M Y') }}</td>
@@ -64,8 +64,15 @@
                     </table>
                 </div>
                 <div class="slide">
-                    <p>kembali</p><span class="number">1</span>
-                    <p>Berikutnya</p>
+                    <button onclick="prevPage()">
+                        <p> Kembali </p>
+                    </button>
+                    <span class="number"
+                        id="pageInfo">
+                    </span>
+                    <button onclick="nextPage()">
+                        <p> Berikutnya </p>
+                    </button>
                 </div>
             </div>
         </div>
@@ -216,7 +223,6 @@
             return;
         }
 
-        // ⬇️ ini yang penting (ambil dari luar form)
         formData.append('id_konselor', idKonselor);
 
         fetch('/siswa/pengajuan/store', {
@@ -234,5 +240,52 @@
             .catch(() => {
                 alert('Gagal mengajukan');
             });
+    };
+
+    //slide
+    let currentPage = 1;
+    let rowsPerPage = 10;
+
+    function showTablePage() {
+        const table = document.getElementById("tableBody");
+        const rows = table.getElementsByTagName("tr");
+
+        let totalRows = rows.length;
+        let totalPages = Math.ceil(totalRows / rowsPerPage);
+
+        let start = (currentPage - 1) * rowsPerPage;
+        let end = start + rowsPerPage;
+
+        for (let i = 0; i < totalRows; i++) {
+            if (i >= start && i < end) {
+                rows[i].style.display = "";
+            } else {
+                rows[i].style.display = "none";
+            }
+        }
+
+        document.getElementById("pageInfo").innerText = currentPage;
+    }
+
+    function nextPage() {
+        const rows = document.getElementById("tableBody").getElementsByTagName("tr");
+        let totalPages = Math.ceil(rows.length / rowsPerPage);
+
+        if (currentPage < totalPages) {
+            currentPage++;
+            showTablePage();
+        }
+    }
+
+    function prevPage() {
+        if (currentPage > 1) {
+            currentPage--;
+            showTablePage();
+        }
+    }
+
+    // jalankan pertama kali
+    window.onload = function() {
+        showTablePage();
     };
 </script>

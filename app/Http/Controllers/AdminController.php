@@ -13,24 +13,69 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 
 class AdminController extends Controller
 {
     public function dashboard()
     {
+        $konselorTerbaik = Konselor::withCount('pengajuan')
+            ->orderBy('pengajuan_count', 'desc')
+            ->take(5)
+            ->get();
+
+
+        $dataPerBulan = PengajuanKonseling::select(
+            DB::raw('MONTH(tanggal_pengajuan) as bulan'),
+            DB::raw('COUNT(*) as total')
+        )
+            ->where('status', 'selesai')
+            ->groupBy('bulan')
+            ->orderBy('bulan')
+            ->pluck('total', 'bulan');
+
+        // total semua
+        $totalSemua = array_sum($dataPerBulan->toArray());
+
+        // ubah ke persen
+        $chartData = [];
+        for ($i = 1; $i <= 12; $i++) {
+            $jumlah = $dataPerBulan[$i] ?? 0;
+
+            $persen = $totalSemua > 0 ? ($jumlah / $totalSemua) * 100 : 0;
+
+            $chartData[] = round($persen, 2); // 2 angka desimal
+        }
+
+        $jadwalHariIni = PengajuanKonseling::with(['siswa', 'kategori'])
+            ->whereDate('tanggal_pengajuan', Carbon::today())
+            ->whereIn('status', ['dijadwalkan', 'berlangsung'])
+            ->get();
+
         return view('admin.dashboard', [
             'totalKonselor' => Konselor::count(),
             'totalSiswa' => Siswa::count(),
             'totalPengajuan' => PengajuanKonseling::count(),
+            'chartData' => $chartData,
+            'konselorTerbaik' => $konselorTerbaik,
+            'jadwalHariIni' => $jadwalHariIni
         ]);
     }
 
-    public function konselor()
+    public function konselor(Request $request)
     {
-        $konselor = Konselor::with('user')->get();
+        $query = Konselor::with('user');
+
+        // SEARCH
+        if ($request->search) {
+            $query->where('nama', 'like', '%' . $request->search . '%')
+                ->orWhere('nip', 'like', '%' . $request->search . '%');
+        }
+
+        $konselor = $query->get();
+
         return view('admin.konselor', compact('konselor'));
     }
-
 
     public function store(Request $request)
     {
@@ -91,11 +136,31 @@ class AdminController extends Controller
         return back()->with('success', 'Data berhasil diupdate');
     }
 
-
-    public function siswa()
+    public function siswa(Request $request)
     {
-        $siswa = Siswa::with('user')->get();
-        return view('admin.siswa', compact('siswa'));
+        $query = Siswa::with('user');
+        $jurusanList = Siswa::select('jurusan')->distinct()->pluck('jurusan');
+        // FILTER KELAS (FIX)
+        if ($request->kelas) {
+            $query->where(function ($q) use ($request) {
+                $q->where('kelas', 'like', $request->kelas . '-%')
+                    ->orWhere('kelas', $request->kelas);
+            });
+        }
+
+        // FILTER JURUSAN
+        if ($request->jurusan) {
+            $query->where('jurusan', $request->jurusan);
+        }
+
+        // SEARCH
+        if ($request->search) {
+            $query->where('nama', 'like', '%' . $request->search . '%');
+        }
+
+        $siswa = $query->get();
+
+        return view('admin.siswa', compact('siswa', 'jurusanList'));
     }
 
     public function storeSiswa(Request $request)
@@ -138,16 +203,39 @@ class AdminController extends Controller
         return back()->with('success', 'Siswa berhasil dihapus');
     }
 
-
-    public function konseling()
+    public function konseling(Request $request)
     {
         PengajuanKonseling::where('status', 'dijadwalkan')
             ->whereDate('tanggal_pengajuan', Carbon::today())
             ->update(['status' => 'berlangsung']);
 
-        $laporan = PengajuanKonseling::with(['siswa', 'konselor', 'kategori', 'laporan'])
-            ->orderBy('tanggal_pengajuan', 'desc')
-            ->get();
+        $query = PengajuanKonseling::with(['siswa', 'konselor', 'kategori', 'laporan']);
+
+        // FILTER TANGGAL
+        if ($request->tanggal) {
+            $query->whereDate('tanggal_pengajuan', $request->tanggal);
+        }
+
+        // FILTER KATEGORI
+        if ($request->kategori) {
+            $query->whereHas('kategori', function ($q) use ($request) {
+                $q->where('nama_kategori', $request->kategori);
+            });
+        }
+
+        // FILTER KONSELOR
+        if ($request->konselor) {
+            $query->where('id_konselor', $request->konselor);
+        }
+
+        // SEARCH (nama siswa)
+        if ($request->search) {
+            $query->whereHas('siswa', function ($q) use ($request) {
+                $q->where('nama', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        $laporan = $query->latest()->get();
 
         $siswa = Siswa::all();
         $kategori = KategoriPermasalahan::all();

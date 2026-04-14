@@ -14,23 +14,23 @@
             <div class="col-md-12 ">
                 <div class="filter-wrap">
                     <div class="filter">
-                        <select name="date" id="">
-                            <option value="" selected disabled>Pilih Tanggal</option>
+                        <input type="date" id="filterTanggal" value="{{ request('tanggal') }}"><select id="filterKategori">
+                            <option value="">Pilih Kategori</option>
+                            @foreach($kategori as $k)
+                            <option value="{{ $k->nama_kategori }}"
+                                {{ request('kategori') == $k->nama_kategori ? 'selected' : '' }}>
+                                {{ $k->nama_kategori }}
+                            </option>
+                            @endforeach
                         </select>
-                        <select name="kategori" id="">
-                            <option value="" selected disabled>Pilih Kategori</option>
-                            <option value="">Akademik</option>
-                            <option value="">Peribadi</option>
-                            <option value="">Sosial</option>
-                            <option value="">Karir</option>
-                        </select>
-                        <button>Terapkan</button>
-                        <button>Reset</button>
+                        <button id="btnFilter">Terapkan</button>
+                        <button id="reset">Reset</button>
                     </div>
                     <!-- <div class="search"> -->
                     <input class="search" type="text" placeholder="Cari...">
                     <!-- </div> -->
                 </div>
+                <div class="selected-filter" id="selectedFilter"></div>
             </div>
         </div>
         <div class="row">
@@ -45,7 +45,7 @@
                                 <th>Aksi</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="tableBody">
                             @if($data->isEmpty())
                             <tr>
                                 <td colspan="4" class="kosong">Tidak ada permintaan konseling</td>
@@ -67,8 +67,13 @@
                     </table>
                 </div>
                 <div class="slide">
-                    <p>kembali</p><span class="number">1</span>
-                    <p>Berikutnya</p>
+                    <button onclick="prevPage()">
+                        <p>Kembali</p>
+                    </button>
+                    <span class="number" id="pageInfo"></span>
+                    <button onclick="nextPage()">
+                        <p>Berikutnya</p>
+                    </button>
                 </div>
             </div>
         </div>
@@ -131,6 +136,77 @@
 @include('layout.footer')
 
 <script>
+    document.getElementById('btnFilter').onclick = function() {
+        const tanggal = document.getElementById('filterTanggal').value;
+        const kategori = document.getElementById('filterKategori').value;
+        const search = document.querySelector('.search').value;
+
+        let url = new URL(window.location.href);
+
+        if (tanggal) url.searchParams.set('tanggal', tanggal);
+        if (kategori) url.searchParams.set('kategori', kategori);
+        if (search) url.searchParams.set('search', search);
+
+        window.location.href = url.toString();
+    };
+    const tanggal = document.getElementById('filterTanggal');
+    const kategori = document.getElementById('filterKategori');
+    const container = document.getElementById('selectedFilter');
+
+    function createChip(label, type) {
+        container.querySelectorAll(`.chip[data-type="${type}"]`).forEach(el => el.remove());
+
+        const chip = document.createElement('div');
+        chip.className = 'chip';
+        chip.dataset.type = type;
+        chip.innerHTML = `
+        ${label}
+        <span class="close">&times;</span>
+    `;
+
+        chip.querySelector('.close').onclick = () => {
+            chip.remove();
+            if (type === 'tanggal') tanggal.value = '';
+            if (type === 'kategori') kategori.value = '';
+        };
+
+        container.appendChild(chip);
+    }
+
+    // EVENT
+    tanggal.addEventListener('change', () => {
+        if (!tanggal.value) return;
+
+        const date = new Date(tanggal.value);
+        const formatted = date.toLocaleDateString('id-ID', {
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric'
+        });
+
+        createChip(formatted, 'tanggal');
+    });
+
+    kategori.addEventListener('change', () => {
+        if (!kategori.value) return;
+
+        createChip(kategori.value, 'kategori');
+    });
+    // RESET
+    document.getElementById('reset').onclick = function() {
+        window.location.href = window.location.pathname;
+    };
+
+    // SEARCH realtime
+    document.querySelector('.search').addEventListener('keyup', function() {
+        let value = this.value.toLowerCase();
+
+        document.querySelectorAll('tbody tr').forEach(row => {
+            row.style.display = row.innerText.toLowerCase().includes(value) ?
+                '' :
+                'none';
+        });
+    });
     let currentId = null;
 
     document.querySelectorAll('.detail').forEach(btn => {
@@ -209,4 +285,51 @@
         document.getElementById('modalBerhasilTerima').style.display = 'none';
         location.reload();
     });
+
+    //slide
+    let currentPage = 1;
+    let rowsPerPage = 10;
+
+    function showTablePage() {
+        const table = document.getElementById("tableBody");
+        const rows = table.getElementsByTagName("tr");
+
+        let totalRows = rows.length;
+        let totalPages = Math.ceil(totalRows / rowsPerPage);
+
+        let start = (currentPage - 1) * rowsPerPage;
+        let end = start + rowsPerPage;
+
+        for (let i = 0; i < totalRows; i++) {
+            if (i >= start && i < end) {
+                rows[i].style.display = "";
+            } else {
+                rows[i].style.display = "none";
+            }
+        }
+
+        document.getElementById("pageInfo").innerText = currentPage;
+    }
+
+    function nextPage() {
+        const rows = document.getElementById("tableBody").getElementsByTagName("tr");
+        let totalPages = Math.ceil(rows.length / rowsPerPage);
+
+        if (currentPage < totalPages) {
+            currentPage++;
+            showTablePage();
+        }
+    }
+
+    function prevPage() {
+        if (currentPage > 1) {
+            currentPage--;
+            showTablePage();
+        }
+    }
+
+    // jalankan pertama kali
+    window.onload = function() {
+        showTablePage();
+    };
 </script>

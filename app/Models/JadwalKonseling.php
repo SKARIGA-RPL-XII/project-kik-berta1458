@@ -2,13 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\PengajuanKonseling;
 
 class JadwalKonseling extends Model
 {
-    use HasFactory;
-
     protected $table = 'jadwal_konseling';
 
     protected $fillable = [
@@ -16,7 +14,6 @@ class JadwalKonseling extends Model
         'tanggal_konseling',
         'status',
     ];
-
 
     public function pengajuan()
     {

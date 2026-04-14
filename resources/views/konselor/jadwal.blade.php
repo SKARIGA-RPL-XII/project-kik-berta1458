@@ -37,30 +37,41 @@
                                 <th>Hasil</th>
                             </tr>
                         </thead>
+                        {{-- FIX #2: Ganti @forelse dengan @foreach biasa --}}
+                        {{-- Row kosong selalu ada di DOM, dikontrol oleh JS --}}
                         <tbody id="tabelJadwal">
-
-                            <tr id="rowKosong" style="display:none;">
-                                <td colspan="4" style="text-align:center;">Tidak ada jadwal pada bulan ini</td>
-                            </tr>
-
-                            @foreach ($jadwal as $j)
-                            <tr class="jadwal-row"
-                                data-bulan="{{ \Carbon\Carbon::parse($j->tanggal_konseling)->format('m') }}"
-                                data-tahun="{{ \Carbon\Carbon::parse($j->tanggal_konseling)->format('Y') }}">
-                                <td>{{ \Carbon\Carbon::parse($j->tanggal_konseling)->translatedFormat('d F Y') }}</td>
-                                <td>{{ $j->pengajuan->siswa->nama }}</td>
-                                <td>{{ $j->pengajuan->kategori->nama_kategori }}</td>
-                                <td><button class="detail" data-deskripsi="{{$j->pengajuan->deskripsi_masalah}}"><i class="fa-solid fa-folder"></i></button></td>
+                            @foreach ($jadwal as $item)
+                            <tr class="jadwal-row">
+                                <td>{{ \Carbon\Carbon::parse($item->tanggal_konseling)->translatedFormat('d F Y') }}</td>
+                                <td>{{ $item->nama_siswa }}</td>
+                                <td>{{ $item->nama_kategori }}</td>
+                                <td>
+                                    <button class="detail"
+                                        onclick="showDetail(@json($item->deskripsi_masalah))">
+                                        <i class="fa-solid fa-folder"></i>
+                                    </button>
+                                </td>
                             </tr>
                             @endforeach
 
+                            {{-- Selalu ada di DOM, JS yang mengatur display-nya --}}
+                            <tr id="rowKosong" style="display:none;">
+                                <td colspan="4" style="text-align:center;">
+                                    Tidak ada jadwal pada bulan ini
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
 
                 <div class="slide">
-                    <p>kembali</p><span class="number">1</span>
-                    <p>Berikutnya</p>
+                    <button onclick="prevPage()">
+                        <p>Kembali</p>
+                    </button>
+                    <span class="number" id="pageInfo"></span>
+                    <button onclick="nextPage()">
+                        <p>Berikutnya</p>
+                    </button>
                 </div>
             </div>
         </div>
@@ -72,85 +83,154 @@
         <div class="modal-header">
             <h2>Deskripsi Singkat Permasalahan</h2>
         </div>
-
         <div class="modal-content">
             <p id="modalDeskripsi"></p>
         </div>
-
         <div class="modal-actions">
             <button id="closeModalDetail">Tutup</button>
         </div>
     </div>
 </div>
+
 @include('layout.footer')
 
 <script>
-    let semuaJadwal = @json($jadwal);
-    let tanggalAdaJadwal = semuaJadwal.map(j => j.tanggal_konseling);
+    let tanggalHighlight = @json($tanggalHighlight).map(t => t.substring(0, 10));
+    let dataJadwal = @json($jadwal);
 
-    document.querySelectorAll('.detail').forEach(btn => {
-        btn.addEventListener('click', function() {
-            let deskripsi = this.getAttribute('data-deskripsi');
-            document.getElementById('modalDeskripsi').textContent = deskripsi;
-            document.getElementById('modalDetail').style.display = 'flex';
-        });
-    });
-
-    document.getElementById('closeModalDetail').addEventListener('click', function() {
-        document.getElementById('modalDetail').style.display = 'none';
-    });
-</script>
-<script>
+    // KALENDER
     let kalender = flatpickr("#kalender", {
         inline: true,
         dateFormat: "Y-m-d",
         disableMobile: true,
 
-        onReady: function(selectedDates, dateStr, instance) {
-            highlightDates(instance);
-            updateTabel(instance.currentMonth + 1, instance.currentYear);
+        onDayCreate: function(dObj, dStr, fp, dayElem) {
+            // FIX #3: format dayElem juga ke Y-m-d agar cocok
+            let d = dayElem.dateObj;
+            let date = d.getFullYear() + '-' +
+                String(d.getMonth() + 1).padStart(2, '0') + '-' +
+                String(d.getDate()).padStart(2, '0');
+            if (tanggalHighlight.includes(date)) {
+                dayElem.classList.add("punya-jadwal");
+            }
         },
 
         onMonthChange: function(selectedDates, dateStr, instance) {
-            highlightDates(instance);
-            updateTabel(instance.currentMonth + 1, instance.currentYear);
+            currentPage = 1; 
+            filterByMonth(instance.currentMonth + 1, instance.currentYear);
         }
     });
 
-    function highlightDates(instance) {
-        let days = instance.days.childNodes;
+    // FILTER TABEL BERDASARKAN BULAN
+    function filterByMonth(bulan, tahun) {
+        let tbody = document.getElementById("tabelJadwal");
+        let rowKosong = document.getElementById("rowKosong");
 
-        days.forEach(day => {
+        let existingRows = tbody.querySelectorAll("tr.jadwal-row");
+        existingRows.forEach(row => row.remove());
 
-            let tgl = day.dateObj.getFullYear() + '-' +
-                String(day.dateObj.getMonth() + 1).padStart(2, '0') + '-' +
-                String(day.dateObj.getDate()).padStart(2, '0');
-
-            if (tanggalAdaJadwal.includes(tgl)) {
-                day.classList.add("punya-jadwal");
-            } else {
-                day.classList.remove("punya-jadwal");
-            }
-        });
-    }
-
-    function updateTabel(bulan, tahun) {
-        let rows = document.querySelectorAll('#tabelJadwal .jadwal-row');
-        let kosongRow = document.getElementById('rowKosong');
-        let ditemukan = false;
-
-        rows.forEach(row => {
-            let rowBulan = row.getAttribute('data-bulan');
-            let rowTahun = row.getAttribute('data-tahun');
-
-            if (rowBulan == bulan.toString().padStart(2, '0') && rowTahun == tahun) {
-                row.style.display = "table-row";
-                ditemukan = true;
-            } else {
-                row.style.display = "none";
-            }
+        let filtered = dataJadwal.filter(item => {
+            let tgl = new Date(item.tanggal_konseling);
+            return (tgl.getMonth() + 1 == bulan) && (tgl.getFullYear() == tahun);
         });
 
-        kosongRow.style.display = ditemukan ? "none" : "table-row";
+        if (filtered.length === 0) {
+            rowKosong.style.display = "";
+            document.getElementById("pageInfo").innerText = "";
+            return;
+        }
+
+        rowKosong.style.display = "none";
+
+        filtered.forEach(item => {
+            let tr = document.createElement('tr');
+            tr.className = 'jadwal-row';
+            tr.innerHTML = `
+                <td>${formatTanggal(item.tanggal_konseling)}</td>
+                <td>${item.nama_siswa}</td>
+                <td>${item.nama_kategori}</td>
+                <td>
+                    <button class="detail">
+                        <i class="fa-solid fa-folder"></i>
+                    </button>
+                </td>
+            `;
+            tr.querySelector('.detail').addEventListener('click', function() {
+                showDetail(item.deskripsi_masalah);
+            });
+            tbody.insertBefore(tr, rowKosong);
+        });
+
+        showTablePage();
     }
+
+    // FORMAT TANGGAL 
+    function formatTanggal(tanggal) {
+        let options = {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        };
+        return new Date(tanggal).toLocaleDateString('id-ID', options);
+    }
+
+    // MODAL DETAIL
+    function showDetail(deskripsi) {
+        document.getElementById("modalDeskripsi").innerText = deskripsi;
+        document.getElementById("modalDetail").style.display = "flex";
+    }
+
+    document.getElementById("closeModalDetail").addEventListener('click', function() {
+        document.getElementById("modalDetail").style.display = "none";
+    });
+
+    document.getElementById("modalDetail").addEventListener('click', function(e) {
+        if (e.target === this) {
+            this.style.display = "none";
+        }
+    });
+
+//slide
+    let currentPage = 1;
+    let rowsPerPage = 10;
+
+    function showTablePage() {
+        const tbody = document.getElementById("tabelJadwal");
+        const rows = Array.from(tbody.querySelectorAll("tr.jadwal-row"));
+
+        let totalRows = rows.length;
+        let totalPages = Math.ceil(totalRows / rowsPerPage) || 1;
+
+        if (currentPage > totalPages) currentPage = totalPages;
+
+        let start = (currentPage - 1) * rowsPerPage;
+        let end = start + rowsPerPage;
+
+        rows.forEach((row, i) => {
+            row.style.display = (i >= start && i < end) ? "" : "none";
+        });
+
+        document.getElementById("pageInfo").innerText = `${currentPage} / ${totalPages}`;
+    }
+
+    function nextPage() {
+        const rows = document.getElementById("tabelJadwal").querySelectorAll("tr.jadwal-row");
+        let totalPages = Math.ceil(rows.length / rowsPerPage) || 1;
+        if (currentPage < totalPages) {
+            currentPage++;
+            showTablePage();
+        }
+    }
+
+    function prevPage() {
+        if (currentPage > 1) {
+            currentPage--;
+            showTablePage();
+        }
+    }
+
+    window.addEventListener('load', function() {
+        let now = new Date();
+        filterByMonth(now.getMonth() + 1, now.getFullYear());
+    });
 </script>

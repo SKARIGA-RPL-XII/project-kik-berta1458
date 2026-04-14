@@ -56,12 +56,12 @@ class SiswaController extends Controller
         $query = \App\Models\PengajuanKonseling::with('kategori')
             ->where('id_siswa', $user->siswa->id);
 
-        // 🔍 FILTER TANGGAL
+        //  FILTER TANGGAL
         if (request('tanggal')) {
             $query->whereDate('tanggal_pengajuan', request('tanggal'));
         }
 
-        // 🔍 FILTER KATEGORI
+        //  FILTER KATEGORI
         if (request('kategori')) {
             $query->whereHas('kategori', function ($q) {
                 $q->where('nama_kategori', request('kategori'));
@@ -82,19 +82,16 @@ class SiswaController extends Controller
             ->where('id_siswa', $user->siswa->id)
             ->whereIn('status', ['selesai', 'menunggu', 'ditolak', 'berlangsung', 'dijadwalkan']);
 
-        // FILTER TANGGAL
         if (request('tanggal')) {
             $query->whereDate('tanggal_pengajuan', request('tanggal'));
         }
 
-        // FILTER KATEGORI
         if (request('kategori')) {
             $query->whereHas('kategori', function ($q) {
                 $q->where('nama_kategori', request('kategori'));
             });
         }
 
-        //SEARCH (nama konselor)
         if (request('search')) {
             $search = request('search');
 

@@ -10,19 +10,41 @@ use Carbon\Carbon;
 
 class KonselorLaporanController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $this->updateStatusOtomatis();
 
         $user = \App\Models\User::find(session('id_user'));
 
-        $laporan = PengajuanKonseling::with(['siswa', 'kategori', 'laporan'])
-            ->where('id_konselor', $user->konselor->id)
-            ->whereIn('status', ['berlangsung', 'selesai', 'dijadwalkan', 'ditolak'])
-            ->latest()
-            ->get();
+        $query = PengajuanKonseling::with(['siswa', 'kategori', 'laporan'])
+            ->where('id_konselor', $user->konselor->id);
 
-        return view('konselor.laporan', compact('laporan'));
+        //  FILTER STATUS
+        if ($request->status) {
+            $query->where('status', $request->status);
+        }
+
+        //  FILTER TANGGAL
+        if ($request->tanggal) {
+            $query->whereDate('tanggal_pengajuan', $request->tanggal);
+        }
+
+        //  FILTER KATEGORI
+        if ($request->kategori) {
+            $query->whereHas('kategori', function ($q) use ($request) {
+                $q->where('nama_kategori', $request->kategori);
+            });
+        }
+
+        //  SEARCH (nama siswa)
+        if ($request->search) {
+            $query->whereHas('siswa', function ($q) use ($request) {
+                $q->where('nama', 'like', '%' . $request->search . '%');
+            });
+        }
+        $kategori = \App\Models\KategoriPermasalahan::all();
+        $laporan = $query->latest()->get();
+        return view('konselor.laporan', compact('laporan', 'kategori'));
     }
 
     public function simpanLaporan(Request $request, $id)
@@ -56,7 +78,6 @@ class KonselorLaporanController extends Controller
                 ]);
             }
 
-            // 🔥 update status jadi selesai
             PengajuanKonseling::where('id', $id)->update([
                 'status' => 'selesai'
             ]);
