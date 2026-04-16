@@ -836,7 +836,7 @@ table .berlangsung {
 .kal-jadwal .flatpickr-day.punya-jadwal {
     background: #00244B;
     color: #fff;
-    
+
 }
 
 .kal-jadwal .flatpickr-calendar.inline {
@@ -1013,7 +1013,8 @@ button.btn-tambah-ajuan {
 .terima,
 .isi-lap,
 .catatan,
-.edit-konselor {
+.edit-konselor,
+.pesan {
     background: #00244B;
     padding: 10px 13px;
     border-radius: 50px;
@@ -1026,7 +1027,8 @@ button.btn-tambah-ajuan {
 .terima i,
 .isi-lap i,
 .catatan i,
-.edit-konselor i {
+.edit-konselor i,
+.pesan i {
     color: #FFB200;
     font-size: 18px;
 }
@@ -1288,7 +1290,7 @@ button.tutup {
 .kal-jadwal-konselor .flatpickr-days {
     width: 100% !important;
     margin: 0 auto;
-        padding: 0 10px !important;
+    padding: 0 10px !important;
 }
 
 /* HARI BIASA */
@@ -1384,6 +1386,45 @@ button.tutup {
     max-height: 90vh;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
     padding: 30px 30px 20px;
+}
+
+.chat-bubble {
+    display: flex;
+    justify-content: flex-start;
+    margin: 10px 0;
+}
+
+#chatDisplay {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 10px;
+}
+
+.bubble-waktu {
+    color: grey;
+    display: flex;
+    justify-content: end;
+    font-size: 11px;
+}
+
+.bubble {
+    background: #eee;
+    padding: 10px 15px;
+    border-radius: 15px;
+    max-width: 70%;
+}
+
+.wrap-input-text {
+    border: 1px solid #00244B;
+    border-radius: 10px;
+    padding: 5px;
+}
+
+.bubble p {
+    margin: 0;
 }
 
 .modal-header h2 {

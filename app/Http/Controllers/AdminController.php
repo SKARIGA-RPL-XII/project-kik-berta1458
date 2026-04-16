@@ -8,6 +8,7 @@ use App\Models\KategoriPermasalahan;
 use App\Models\Siswa;
 use App\Models\LaporanKonseling;
 use App\Models\PengajuanKonseling;
+use App\Models\PesanKonseling;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -329,7 +330,6 @@ class AdminController extends Controller
 
         $pengajuan = PengajuanKonseling::findOrFail($request->id_pengajuan);
 
-        // 🚨 PROTEKSI STATUS
         if ($pengajuan->status !== 'menunggu') {
             return response()->json([
                 'message' => 'Hanya pengajuan dengan status menunggu yang bisa diubah!'
@@ -360,5 +360,56 @@ class AdminController extends Controller
         return response()->json([
             'message' => 'Data konseling berhasil dihapus'
         ]);
+    }
+    public function simpanPesan(Request $request, $id)
+    {
+        $request->validate([
+            'pesan_siswa' => 'required'
+        ]);
+
+        $user = \App\Models\User::find(session('id_user'));
+
+        $query = PengajuanKonseling::where('id', $id);
+
+        if ($user->role === 'konselor') {
+            $query->where('id_konselor', $user->konselor->id);
+        }
+
+        $query->firstOrFail();
+        PesanKonseling::create([
+            'id_pengajuan' => $id,
+            'isi_pesan'    => $request->pesan_siswa,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Pesan berhasil dikirim'
+        ]);
+    }
+
+    // Ambil semua riwayat pesan untuk ditampilkan di chat
+    public function ambilPesan($id)
+    {
+        // Verifikasi konselor hanya bisa ambil pesan pengajuannya sendiri
+        $user = \App\Models\User::find(session('id_user'));
+
+        $query = PengajuanKonseling::where('id', $id);
+
+        if ($user->role === 'konselor') {
+            $query->where('id_konselor', $user->konselor->id);
+        }
+
+        $query->firstOrFail();
+        $pesan = PesanKonseling::where('id_pengajuan', $id)
+            ->orderBy('created_at', 'asc')
+            ->get()
+            ->map(function ($p) {
+                return [
+                    'isi_pesan'  => $p->isi_pesan,
+                    'waktu'      => \Carbon\Carbon::parse($p->created_at)->format('d M Y, H:i'),
+                ];
+            });
+
+        return response()->json($pesan);
     }
 }

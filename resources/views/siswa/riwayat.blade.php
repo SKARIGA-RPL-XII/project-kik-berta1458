@@ -11,27 +11,22 @@
             </div>
         </div>
         <div class="row">
-            <div class="col-md-12 ">
+            <div class="col-md-12">
                 <div class="filter-wrap">
                     <div class="filter">
                         <input type="date" id="filterTanggal" value="{{ request('tanggal') }}">
-
                         <select id="filterKategori">
                             <option value="">Pilih Kategori</option>
                             @foreach($kategori as $k)
-                            <option value="{{ $k->nama_kategori }}"
-                                {{ request('kategori') == $k->nama_kategori ? 'selected' : '' }}>
+                            <option value="{{ $k->nama_kategori }}" {{ request('kategori') == $k->nama_kategori ? 'selected' : '' }}>
                                 {{ $k->nama_kategori }}
                             </option>
                             @endforeach
                         </select>
-
                         <button id="btnFilter">Terapkan</button>
                         <button id="reset">Reset</button>
                     </div>
-                    <!-- <div class="search"> -->
                     <input class="search" type="text" placeholder="Cari...">
-                    <!-- </div> -->
                 </div>
                 <div class="selected-filter" id="selectedFilter"></div>
             </div>
@@ -46,7 +41,7 @@
                                 <th>Konselor</th>
                                 <th>Kategori</th>
                                 <th>Status</th>
-                                <th>Hasil</th>
+                                <th>Aksi</th>
                             </tr>
                         </thead>
                         <tbody id="tableBody">
@@ -55,18 +50,24 @@
                                 <td>{{ \Carbon\Carbon::parse($item->tanggal_pengajuan)->format('d M Y') }}</td>
                                 <td>{{ $item->konselor->nama ?? '-' }}</td>
                                 <td>{{ $item->kategori->nama_kategori }}</td>
-                                <td> <span class="{{ $item->status }}">
-                                        {{ ucfirst($item->status) }}
-                                    </span></td>
+                                <td><span class="{{ $item->status }}">{{ ucfirst($item->status) }}</span></td>
                                 <td>
-                                    <a class="detail" data-nama="{{ $user->siswa->nama ?? '-' }}"
+                                    <a class="detail"
+                                        data-nama="{{ $user->siswa->nama ?? '-' }}"
                                         data-kelas="{{ $user->siswa->kelas ?? '-' }}"
                                         data-tanggal="{{ \Carbon\Carbon::parse($item->tanggal_pengajuan)->format('d M Y') }}"
-                                        data-catatan="{{ $item->laporan->pesan_siswa ?? 'Belum ada catatan' }}"
-                                        href="#"><i class="fa-solid fa-folder"></i></a>
+                                        href="#">
+                                        <i class="fa-solid fa-folder"></i>
+                                    </a>
+
+                                    @if($item->pesan->count() > 0)
+                                    <button class="pesan" data-id="{{ $item->id }}">
+                                        <i class="fa-solid fa-message"></i>
+                                    </button>
+                                    @endif
+
                                     @if($item->status === 'ditolak')
-                                    <button class="catatan"
-                                        data-alasan="{{ $item->alasan_penolakan }}">
+                                    <button class="catatan" data-alasan="{{ $item->alasan_penolakan }}">
                                         <i class="fa-solid fa-clipboard-list"></i>
                                     </button>
                                     @endif
@@ -74,71 +75,58 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="3" style="text-align:center;">Belum ada riwayat konseling</td>
+                                <td colspan="5" style="text-align:center;">Belum ada riwayat konseling</td>
                             </tr>
                             @endforelse
                         </tbody>
                     </table>
                 </div>
                 <div class="slide">
-                    <button onclick="prevPage()">
-                        <p>Kembali</p>
-                    </button>
+                    <button onclick="prevPage()"><p>Kembali</p></button>
                     <span class="number" id="pageInfo"></span>
-                    <button onclick="nextPage()">
-                        <p>Berikutnya</p>
-                    </button>
+                    <button onclick="nextPage()"><p>Berikutnya</p></button>
                 </div>
             </div>
         </div>
     </div>
 </section>
-<!-- modal penolakan -->
+
 <div id="modalCatatan" class="modal-overlay">
     <div class="modal-box">
-        <div class="modal-header">
-            <h2>Alasan Penolakan</h2>
-        </div>
-
-        <div class="modal-content">
-            <p id="isiCatatan"></p>
-        </div>
-
-        <div class="modal-actions">
-            <button id="closeModalCatatan">Tutup</button>
-        </div>
+        <div class="modal-header"><h2>Alasan Penolakan</h2></div>
+        <div class="modal-content"><p id="isiCatatan"></p></div>
+        <div class="modal-actions"><button id="closeModalCatatan">Tutup</button></div>
     </div>
 </div>
 
 <div class="overlay" id="popupDetail">
     <div class="popup-content-detail">
-        <h2 class="modal-title">Hasil Bimbingan Konseling</h2>
-
+        <h2 class="modal-title">Detail Konseling</h2>
         <table class="table-report">
-            <tr>
-                <th>Nama</th>
-                <td id="modalNama"></td>
-            </tr>
-            <tr>
-                <th>Kelas</th>
-                <td id="modalKelas">
-
-                </td>
-            </tr>
-            <tr>
-                <th>Tgl, Konseling</th>
-                <td id="modalTanggal">
-
-                </td>
-            </tr>
-            <tr>
-                <th>Catatan</th>
-                <td id="modalCatatan">
-                </td>
-            </tr>
+            <tr><th>Nama</th><td id="modalNama"></td></tr>
+            <tr><th>Kelas</th><td id="modalKelas"></td></tr>
+            <tr><th>Tgl. Konseling</th><td id="modalTanggal"></td></tr>
         </table>
-
         <button class="tutup" id="tutup">Tutup</button>
+    </div>
+</div>
+
+<div id="modalPesan" class="modal-overlay" style="display:none;">
+    <div class="modal-box">
+        <div class="modal-header"><h2>Pesan dari Konselor</h2></div>
+        <div class="modal-content">
+            <div class="chat-bubble" id="chatDisplay" style="min-height:80px; max-height:300px; overflow-y:auto; margin-bottom:12px;">
+                <p style="color:#aaa; font-size:13px; text-align:center;">Memuat pesan...</p>
+            </div>
+            <div style="padding:10px 12px; background:#f9f9f9; border-radius:6px; border:1px solid #eee;">
+                <p style="font-size:12px; color:#999; margin:0;">
+                    Kamu tidak dapat membalas pesan ini. Jika ingin berkonsultasi lebih lanjut, silakan ajukan konseling.
+                </p>
+            </div>
+        </div>
+        <div class="modal-actions">
+            <button id="closeModalPesan">Tutup</button>
+        </div>
     </div>
 </div>
 
@@ -147,153 +135,122 @@
 <script>
     document.querySelector('.search').addEventListener('keyup', function() {
         let value = this.value.toLowerCase();
-
         document.querySelectorAll('tbody tr').forEach(row => {
-            row.style.display = row.innerText.toLowerCase().includes(value) ?
-                '' :
-                'none';
+            row.style.display = row.innerText.toLowerCase().includes(value) ? '' : 'none';
         });
     });
+
     document.getElementById('btnFilter').onclick = function() {
-        const tanggal = document.getElementById('filterTanggal').value;
+        const tanggal  = document.getElementById('filterTanggal').value;
         const kategori = document.getElementById('filterKategori').value;
-        const search = document.querySelector('.search').value;
-
+        const search   = document.querySelector('.search').value;
         let url = new URL(window.location.href);
-
-        if (tanggal) url.searchParams.set('tanggal', tanggal);
+        if (tanggal)  url.searchParams.set('tanggal', tanggal);
         if (kategori) url.searchParams.set('kategori', kategori);
-        if (search) url.searchParams.set('search', search);
-
+        if (search)   url.searchParams.set('search', search);
         window.location.href = url.toString();
     };
 
-    const btnDetails = document.querySelectorAll('.detail');
-    const popup = document.getElementById('popupDetail');
-    const btnClose = document.getElementById('tutup');
-
-    btnDetails.forEach(btn => {
+    document.querySelectorAll('.detail').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.preventDefault();
+            document.getElementById('modalNama').innerText    = this.dataset.nama;
+            document.getElementById('modalKelas').innerText   = this.dataset.kelas;
+            document.getElementById('modalTanggal').innerText = this.dataset.tanggal;
+            document.getElementById('popupDetail').classList.add('show');
+        });
+    });
+    document.getElementById('tutup').addEventListener('click', () => {
+        document.getElementById('popupDetail').classList.remove('show');
+    });
 
-            // ambil data dari tombol
-            const nama = this.dataset.nama;
-            const kelas = this.dataset.kelas;
-            const tanggal = this.dataset.tanggal;
-            const catatan = this.dataset.catatan;
+    document.querySelectorAll('.catatan').forEach(btn => {
+        btn.onclick = () => {
+            document.getElementById('isiCatatan').textContent = btn.dataset.alasan || 'Tidak ada alasan';
+            document.getElementById('modalCatatan').style.display = 'flex';
+        };
+    });
+    document.getElementById('closeModalCatatan').onclick = () => {
+        document.getElementById('modalCatatan').style.display = 'none';
+    };
 
-            // inject ke modal
-            document.getElementById('modalNama').innerText = nama;
-            document.getElementById('modalKelas').innerText = kelas;
-            document.getElementById('modalTanggal').innerText = tanggal;
-            document.getElementById('modalCatatan').innerText = catatan;
+    document.querySelectorAll('.pesan').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const id = btn.dataset.id;
+            const chatDisplay = document.getElementById('chatDisplay');
+            chatDisplay.innerHTML = '<p style="color:#aaa;font-size:13px;text-align:center;">Memuat pesan...</p>';
+            document.getElementById('modalPesan').style.display = 'flex';
 
-            popup.classList.add('show');
+            fetch(`/siswa/pesan/${id}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.length === 0) {
+                        chatDisplay.innerHTML = '<p style="color:#aaa;font-size:13px;text-align:center;">Belum ada pesan</p>';
+                    } else {
+                        let html = '';
+                        data.forEach(p => {
+                            html += `<div class="bubble kiri"><div>${p.isi_pesan}</div><span class="bubble-waktu">${p.waktu}</span></div>`;
+                        });
+                        chatDisplay.innerHTML = html;
+                        chatDisplay.scrollTop = chatDisplay.scrollHeight;
+                    }
+                })
+                .catch(() => {
+                    chatDisplay.innerHTML = '<p style="color:red;font-size:13px;">Gagal memuat pesan</p>';
+                });
         });
     });
 
-    btnClose.addEventListener('click', () => {
-        popup.classList.remove('show');
+    document.getElementById('closeModalPesan').addEventListener('click', () => {
+        document.getElementById('modalPesan').style.display = 'none';
     });
 
-    const tanggal = document.getElementById('filterTanggal');
-    const kategori = document.getElementById('filterKategori');
+    const tanggal   = document.getElementById('filterTanggal');
+    const kategori  = document.getElementById('filterKategori');
     const container = document.getElementById('selectedFilter');
-    const resetBtn = document.getElementById('reset');
 
     function createChip(label, type) {
         container.querySelectorAll(`.chip[data-type="${type}"]`).forEach(el => el.remove());
-
         const chip = document.createElement('div');
         chip.className = 'chip';
         chip.dataset.type = type;
-        chip.innerHTML = `
-            ${label}
-            <span class="close">&times;</span>
-        `;
-
+        chip.innerHTML = `${label}<span class="close">&times;</span>`;
         chip.querySelector('.close').onclick = () => {
             chip.remove();
             if (type === 'tanggal') tanggal.value = '';
             if (type === 'kategori') kategori.value = '';
         };
-
         container.appendChild(chip);
     }
 
     tanggal.addEventListener('change', () => {
         const date = new Date(tanggal.value);
-        const formatted = date.toLocaleDateString('id-ID', {
-            day: '2-digit',
-            month: 'long',
-            year: 'numeric'
-        });
-        createChip(formatted, 'tanggal');
+        createChip(date.toLocaleDateString('id-ID', { day:'2-digit', month:'long', year:'numeric' }), 'tanggal');
     });
+    kategori.addEventListener('change', () => { createChip(kategori.value, 'kategori'); });
+    document.getElementById('reset').addEventListener('click', () => { window.location.href = window.location.pathname; });
 
-    kategori.addEventListener('change', () => {
-        createChip(kategori.value, 'kategori');
-    });
-
-    resetBtn.addEventListener('click', () => {
-        window.location.href = window.location.pathname;
-    });
-    document.querySelectorAll('.catatan').forEach(btn => {
-        btn.onclick = () => {
-            document.getElementById('modalCatatan').style.display = 'flex';
-            document.getElementById('isiCatatan').textContent = btn.dataset.alasan || 'Tidak ada alasan';
-        };
-    });
-
-    // tombol tutup
-    document.getElementById('closeModalCatatan').onclick = () => {
-        document.getElementById('modalCatatan').style.display = 'none';
-    };
-
-    //slide
     let currentPage = 1;
-    let rowsPerPage = 10;
+    const rowsPerPage = 10;
 
     function showTablePage() {
-        const table = document.getElementById("tableBody");
-        const rows = table.getElementsByTagName("tr");
-
-        let totalRows = rows.length;
-        let totalPages = Math.ceil(totalRows / rowsPerPage);
-
-        let start = (currentPage - 1) * rowsPerPage;
-        let end = start + rowsPerPage;
-
-        for (let i = 0; i < totalRows; i++) {
-            if (i >= start && i < end) {
-                rows[i].style.display = "";
-            } else {
-                rows[i].style.display = "none";
-            }
+        const rows = document.getElementById('tableBody').getElementsByTagName('tr');
+        const start = (currentPage - 1) * rowsPerPage;
+        const end   = start + rowsPerPage;
+        for (let i = 0; i < rows.length; i++) {
+            rows[i].style.display = (i >= start && i < end) ? '' : 'none';
         }
-
-        document.getElementById("pageInfo").innerText = currentPage;
+        document.getElementById('pageInfo').innerText = currentPage;
     }
 
     function nextPage() {
-        const rows = document.getElementById("tableBody").getElementsByTagName("tr");
-        let totalPages = Math.ceil(rows.length / rowsPerPage);
-
-        if (currentPage < totalPages) {
-            currentPage++;
-            showTablePage();
-        }
+        const rows = document.getElementById('tableBody').getElementsByTagName('tr');
+        if (currentPage < Math.ceil(rows.length / rowsPerPage)) { currentPage++; showTablePage(); }
     }
 
     function prevPage() {
-        if (currentPage > 1) {
-            currentPage--;
-            showTablePage();
-        }
+        if (currentPage > 1) { currentPage--; showTablePage(); }
     }
 
-    // jalankan pertama kali
-    window.onload = function() {
-        showTablePage();
-    };
+    window.onload = function() { showTablePage(); };
 </script>

@@ -21,6 +21,8 @@ Route::middleware(['auth.custom', 'role:siswa'])->group(function () {
     Route::post('/siswa/pengajuan/store', [SiswaController::class, 'storePengajuan']);
     Route::get('/riwayat-konseling', [SiswaController::class, 'riwayat']);
     Route::get('/profil-siswa', [SiswaController::class, 'profile']);
+    // Ambil riwayat pesan untuk siswa (read-only)
+    Route::get('/siswa/pesan/{id}', [SiswaController::class, 'ambilPesan']);
 });
 
 Route::middleware(['auth.custom', 'role:konselor'])->group(function () {
@@ -31,6 +33,10 @@ Route::middleware(['auth.custom', 'role:konselor'])->group(function () {
     Route::get('/jadwal-konseling', [KonselorJadwalController::class, 'index']);
     Route::get('/laporan-konseling', [KonselorLaporanController::class, 'index']);
     Route::post('/konselor/laporan/{id}/simpan', [KonselorLaporanController::class, 'simpanLaporan']);
+    // Kirim pesan ke siswa
+    Route::post('/konselor/laporan/{id}/simpan-pesan', [KonselorLaporanController::class, 'simpanPesan']);
+    // Ambil riwayat pesan untuk ditampilkan di chat
+    Route::get('/konselor/laporan/{id}/ambil-pesan', [KonselorLaporanController::class, 'ambilPesan']);
 });
 
 Route::middleware(['auth.custom', 'role:admin'])->group(function () {
@@ -47,6 +53,8 @@ Route::middleware(['auth.custom', 'role:admin'])->group(function () {
     Route::delete('/admin/konseling/{id}', [AdminController::class, 'deleteKonseling']);
     Route::post('/admin/laporan/simpan', [AdminController::class, 'simpanLaporan']);
     Route::post('/admin/konseling/update-konselor', [AdminController::class, 'updateKonselor']);
+    Route::get('/admin/laporan/{id}/ambil-pesan', [AdminController::class, 'ambilPesan']);
+    Route::post('/admin/laporan/{id}/simpan-pesan', [AdminController::class, 'simpanPesan']);
 });
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');

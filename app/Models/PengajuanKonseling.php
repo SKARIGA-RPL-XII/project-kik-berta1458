@@ -2,13 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class PengajuanKonseling extends Model
 {
-    use HasFactory;
-
     protected $table = 'pengajuan_konseling';
 
     protected $fillable = [
@@ -33,16 +30,17 @@ class PengajuanKonseling extends Model
 
     public function kategori()
     {
-        return $this->belongsTo(\App\Models\KategoriPermasalahan::class, 'id_kategori');
-    }
-
-    public function jadwal()
-    {
-        return $this->hasOne(JadwalKonseling::class, 'id_pengajuan');
+        return $this->belongsTo(KategoriPermasalahan::class, 'id_kategori');
     }
 
     public function laporan()
     {
-        return $this->hasOne(\App\Models\LaporanKonseling::class, 'id_pengajuan');
+        return $this->hasOne(LaporanKonseling::class, 'id_pengajuan');
     }
+
+    public function pesan()
+{
+    return $this->hasMany(PesanKonseling::class, 'id_pengajuan')
+                ->orderBy('created_at', 'asc');
+}
 }

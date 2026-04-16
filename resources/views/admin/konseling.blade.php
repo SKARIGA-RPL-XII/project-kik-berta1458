@@ -85,8 +85,11 @@
                                 data-deskripsi="{{ $lap->deskripsi_masalah }}">
                                 <i class="fa-solid fa-folder"></i>
                             </button>
-
-                            {{-- ✅ HANYA MENUNGGU --}}
+                            <button class="pesan"
+                                data-id="{{ $lap->id }}"
+                                data-nama="{{ $lap->siswa->nama }}">
+                                <i class="fa-solid fa-message"></i>
+                            </button>
                             @if($lap->status === 'menunggu')
                             <button class="edit-konselor"
                                 data-id="{{ $lap->id }}"
@@ -129,14 +132,14 @@
             </table>
         </div>
         <div class="slide">
-                    <button onclick="prevPage()">
-                        <p>Kembali</p>
-                    </button>
-                    <span class="number" id="pageInfo"></span>
-                    <button onclick="nextPage()">
-                        <p>Berikutnya</p>
-                    </button>
-                </div>
+            <button onclick="prevPage()">
+                <p>Kembali</p>
+            </button>
+            <span class="number" id="pageInfo"></span>
+            <button onclick="nextPage()">
+                <p>Berikutnya</p>
+            </button>
+        </div>
     </div>
 </section>
 
@@ -345,7 +348,35 @@
 
     </div>
 </div>
+<div id="modalPesan" class="modal-overlay" style="display:none;">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h2>Pesan ke <span id="pesanNamaSiswa"></span></h2>
+        </div>
+        <div class="modal-content">
+            {{-- Area chat riwayat pesan --}}
+            <div class="chat-bubble" id="chatDisplay" style="min-height:80px; max-height:300px; overflow-y:auto; margin-bottom:12px;">
+                <p style="color:#aaa; font-size:13px; text-align:center;" id="chatKosong">Belum ada pesan</p>
+            </div>
 
+            {{-- Input pesan baru --}}
+            <div class="wrap-input-text">
+                <div class="editor-toolbar">
+                    <button type="button" onclick="formatTextPesan('bold')"><b>B</b></button>
+                    <button type="button" onclick="formatTextPesan('italic')"><i>I</i></button>
+                    <button type="button" onclick="formatTextPesan('underline')"><u>U</u></button>
+                    <button type="button" onclick="formatTextPesan('insertUnorderedList')"><i class="fa-solid fa-list"></i></button>
+                    <button type="button" onclick="formatTextPesan('insertOrderedList')"><i class="fa-solid fa-list-ol"></i></button>
+                </div>
+                <div id="inputPesan" class="textarea-laporan editor" contenteditable="true" placeholder="Tulis pesan ke siswa..."></div>
+            </div>
+        </div>
+        <div class="modal-actions">
+            <button id="closeModalPesan">Tutup</button>
+            <button id="kirimPesan">Kirim</button>
+        </div>
+    </div>
+</div>
 
 @include('layout.footer')
 
@@ -526,6 +557,95 @@
                 })
                 .catch(() => alert('Gagal update konselor'));
         };
+
+        let currentPesanId = null;
+
+        document.querySelectorAll('.pesan').forEach(btn => {
+            btn.addEventListener('click', () => {
+                currentPesanId = btn.dataset.id;
+                document.getElementById('pesanNamaSiswa').textContent = btn.dataset.nama;
+                document.getElementById('inputPesan').innerHTML = '';
+
+                // Kosongkan dulu, tampilkan loading
+                const chatDisplay = document.getElementById('chatDisplay');
+                chatDisplay.innerHTML = '<p style="color:#aaa;font-size:13px;text-align:center;">Memuat pesan...</p>';
+
+                // Fetch riwayat pesan dari backend
+                fetch(`/admin/laporan/${currentPesanId}/ambil-pesan`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.length === 0) {
+                            chatDisplay.innerHTML = '<p style="color:#aaa;font-size:13px;text-align:center;">Belum ada pesan</p>';
+                        } else {
+                            let html = '';
+                            data.forEach(p => {
+                                html += `
+                                <div class="bubble kanan">
+                                    <div>${p.isi_pesan}</div>
+                                    <span class="bubble-waktu">${p.waktu}</span>
+                                </div>`;
+                            });
+                            chatDisplay.innerHTML = html;
+                            // Scroll ke bawah
+                            chatDisplay.scrollTop = chatDisplay.scrollHeight;
+                        }
+                    })
+                    .catch(() => {
+                        chatDisplay.innerHTML = '<p style="color:red;font-size:13px;">Gagal memuat pesan</p>';
+                    });
+
+                document.getElementById('modalPesan').style.display = 'flex';
+            });
+        });
+
+        document.getElementById('closeModalPesan').addEventListener('click', () => {
+            document.getElementById('modalPesan').style.display = 'none';
+        });
+
+        // ── Kirim pesan ──────────────────────────────────────
+        document.getElementById('kirimPesan').addEventListener('click', function() {
+            const pesan = document.getElementById('inputPesan').innerHTML.trim();
+            if (!pesan) {
+                alert('Pesan tidak boleh kosong');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('pesan_siswa', pesan);
+            formData.append('_token', '{{ csrf_token() }}');
+
+            fetch(`/admin/laporan/${currentPesanId}/simpan-pesan`, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        // Langsung tambahkan bubble baru tanpa reload
+                        const chatDisplay = document.getElementById('chatDisplay');
+                        const kosong = chatDisplay.querySelector('p');
+                        if (kosong) kosong.remove();
+
+                        const now = new Date().toLocaleString('id-ID', {
+                            day: '2-digit',
+                            month: 'short',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+
+                        chatDisplay.innerHTML += `
+                    <div class="bubble kanan">
+                        <div>${pesan}</div>
+                        <span class="bubble-waktu">${now}</span>
+                    </div>`;
+                        chatDisplay.scrollTop = chatDisplay.scrollHeight;
+                        document.getElementById('inputPesan').innerHTML = '';
+                    }
+                })
+                .catch(() => alert('Gagal kirim pesan'));
+        });
+
         // MODAL LAPORAN
         let mode = 'create';
         let foto = null;
@@ -737,7 +857,7 @@
             previewPDF.style.display = 'block';
         }
     });
-     //slide
+    //slide
     let currentPage = 1;
     let rowsPerPage = 10;
 
