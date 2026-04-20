@@ -10,14 +10,5 @@ class SiswaSeeder extends Seeder
 {
     public function run(): void
     {
-        $userSiswa = User::where('role', 'siswa')->first();
-
-        Siswa::create([
-            'id_user' => $userSiswa->id,
-            'nis'     => '23999',
-            'nama'    => 'Berta Yuanita',
-            'kelas'   => 'XII-RPA',
-            'jurusan'   => 'Rekayasa Perangkat Lunak',
-        ]);
     }
 }

@@ -15,19 +15,17 @@
                         <select id="filterKategori">
                             <option value="">Pilih Kategori</option>
                             @foreach($kategori as $k)
-                            <option value="{{ $k->nama_kategori }}"
-                                {{ request('kategori') == $k->nama_kategori ? 'selected' : '' }}>
-                                {{ $k->nama_kategori }}
-                            </option>
+                                <option value="{{ $k->nama_kategori }}" {{ request('kategori') == $k->nama_kategori ? 'selected' : '' }}>
+                                    {{ $k->nama_kategori }}
+                                </option>
                             @endforeach
                         </select>
                         <select id="filterKonselor">
                             <option value="">Pilih Konselor</option>
                             @foreach($konselor as $k)
-                            <option value="{{ $k->id }}"
-                                {{ request('konselor') == $k->id ? 'selected' : '' }}>
-                                {{ $k->nama }}
-                            </option>
+                                <option value="{{ $k->id }}" {{ request('konselor') == $k->id ? 'selected' : '' }}>
+                                    {{ $k->nama }}
+                                </option>
                             @endforeach
                         </select>
 
@@ -59,73 +57,68 @@
                 </thead>
                 <tbody id="tableBody">
                     @forelse($laporan as $lap)
-                    <tr>
-                        <td>{{ \Carbon\Carbon::parse($lap->tanggal_pengajuan)->translatedFormat('d F Y')}}</td>
-                        <td>{{ $lap->siswa->nama }}</td>
-                        <td>{{ $lap->konselor->nama }}</td>
-                        <td>{{ $lap->kategori->nama_kategori }}</td>
-                        <td>@if ($lap->status == 'menunggu')
-                            <span class="menunggu">Menunggu</span>
+                        <tr>
+                            <td>{{ \Carbon\Carbon::parse($lap->tanggal_pengajuan)->translatedFormat('d F Y')}}</td>
+                            <td>{{ optional($lap->siswa)->nama ?? '-' }}</td>
+                            <td>{{ optional($lap->konselor)->nama ?? '-' }}</td>
+                            <td>{{ optional($lap->kategori)->nama_kategori ?? '-' }}</td>
+                            <td>@if ($lap->status == 'menunggu')
+                                <span class="menunggu">Menunggu</span>
 
                             @elseif ($lap->status == 'ditolak')
-                            <span class="ditolak">Ditolak</span>
+                                    <span class="ditolak">Ditolak</span>
 
-                            @elseif ($lap->status == 'dijadwalkan')
-                            <span class="dijadwalkan">Dijadwalkan</span>
+                                @elseif ($lap->status == 'dijadwalkan')
+                                    <span class="dijadwalkan">Dijadwalkan</span>
 
-                            @elseif ($lap->status == 'berlangsung')
-                            <span class="berlangsung">Berlangsung</span>
+                                @elseif ($lap->status == 'berlangsung')
+                                    <span class="berlangsung">Berlangsung</span>
 
-                            @elseif ($lap->status == 'selesai')
-                            <span class="selesai">Selesai</span>
-                            @endif
-                        </td>
-                        <td>
-                            <button class="detail"
-                                data-deskripsi="{{ $lap->deskripsi_masalah }}">
-                                <i class="fa-solid fa-folder"></i>
-                            </button>
-                            <button class="pesan"
-                                data-id="{{ $lap->id }}"
-                                data-nama="{{ $lap->siswa->nama }}">
-                                <i class="fa-solid fa-message"></i>
-                            </button>
-                            @if($lap->status === 'menunggu')
-                            <button class="edit-konselor"
-                                data-id="{{ $lap->id }}"
-                                data-konselor="{{ $lap->id_konselor }}">
-                                <i class="fa-solid fa-user"></i>
-                            </button>
-                            @endif
+                                @elseif ($lap->status == 'selesai')
+                                    <span class="selesai">Selesai</span>
+                                @endif
+                            </td>
+                            <td>
+                                <button class="detail" data-deskripsi="{{ $lap->deskripsi_masalah }}">
+                                    <i class="fa-solid fa-folder"></i>
+                                </button>
+                                <button class="pesan" data-id="{{ $lap->id }}" data-nama="{{ $lap->siswa->nama }}">
+                                    <i class="fa-solid fa-message"></i>
+                                </button>
+                                @if($lap->status === 'menunggu')
+                                    <button class="edit-konselor" data-id="{{ $lap->id }}"
+                                        data-konselor="{{ $lap->id_konselor }}">
+                                        <i class="fa-solid fa-user"></i>
+                                    </button>
+                                @endif
 
-                            @if($lap->status === 'ditolak')
-                            <button class="catatan"
-                                data-alasan="{{ $lap->alasan_penolakan }}">
-                                <i class="fa-solid fa-clipboard-list"></i>
-                            </button>
-                            @endif
+                                @if($lap->status === 'ditolak')
+                                    <button class="catatan" data-alasan="{{ $lap->alasan_penolakan }}">
+                                        <i class="fa-solid fa-clipboard-list"></i>
+                                    </button>
+                                @endif
 
-                            @if(in_array($lap->status, ['dijadwalkan', 'berlangsung', 'selesai']))
-                            <button class="isi-lap"
-                                data-id="{{ $lap->id }}"
-                                data-nama="{{ $lap->siswa->nama }}"
-                                data-kelas="{{ $lap->siswa->kelas }}"
-                                data-konselor="{{ $lap->konselor->nama }}"
-                                data-kategori="{{ $lap->kategori->nama_kategori }}"
-                                data-tanggal="{{ $lap->tanggal_pengajuan }}"
-                                data-permasalahan="{{ $lap->deskripsi_masalah }}"
-                                data-hasil="{{ $lap->laporan->hasil_catatan ?? '' }}"
-                                data-foto="{{ $lap->laporan->bukti_file ?? '' }}" data-pesan="{{ $lap->laporan->pesan_siswa ?? '' }}">
-                                <i class="fa-solid fa-pen-to-square"></i>
-                            </button>
-                            @endif
-                        </td>
+                                @if(in_array($lap->status, ['dijadwalkan', 'berlangsung', 'selesai']))
+                                    <button class="isi-lap" data-id="{{ $lap->id }}"
+                                        data-nama="{{ optional($lap->siswa)->nama ?? '-' }}"
+                                        data-kelas="{{ optional($lap->siswa)->kelas ?? '-' }}"
+                                        data-konselor="{{ optional($lap->konselor)->nama ?? '-' }}"
+                                        data-kategori="{{ optional($lap->kategori)->nama_kategori ?? '-' }}"
+                                        data-tanggal="{{ $lap->tanggal_pengajuan }}"
+                                        data-permasalahan="{{ $lap->deskripsi_masalah }}"
+                                        data-hasil="{{ $lap->laporan->hasil_catatan ?? '' }}"
+                                        data-foto="{{ $lap->laporan->bukti_file ?? '' }}"
+                                        data-pesan="{{ $lap->laporan->pesan_siswa ?? '' }}">
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                    </button>
+                                @endif
+                            </td>
 
-                    </tr>
+                        </tr>
                     @empty
-                    <tr>
-                        <td colspan="5" style="text-align:center;">Tidak ada data laporan</td>
-                    </tr>
+                        <tr>
+                            <td colspan="6" style="text-align:center;">Tidak ada data laporan</td>
+                        </tr>
                     @endforelse
 
                 </tbody>
@@ -158,7 +151,7 @@
             <select name="id_konselor" required>
                 <option value="">Pilih Konselor</option>
                 @foreach($konselor as $k)
-                <option value="{{ $k->id }}">{{ $k->nama }}</option>
+                    <option value="{{ $k->id }}">{{ $k->nama }}</option>
                 @endforeach
             </select>
 
@@ -226,13 +219,13 @@
                 <tr>
                     <th>Bukti Konseling</th>
                     <td>
-                        <input style="margin-top:10px;" type="file" id="buktiFile" name="bukti_file" accept="image/*,.pdf">
+                        <input style="margin-top:10px;" type="file" id="buktiFile" name="bukti_file"
+                            accept="image/*,.pdf">
 
-                        <!-- Preview Image -->
                         <img id="previewImage" style="display:none; width:100%; margin-top:10px;" />
 
-                        <!-- Preview PDF -->
-                        <iframe id="previewPDF" style="display:none; width:100%; height:300px; margin-top:10px;"></iframe>
+                        \ <iframe id="previewPDF"
+                            style="display:none; width:100%; height:300px; margin-top:10px;"></iframe>
                     </td>
                 </tr>
 
@@ -252,31 +245,8 @@
                             </button>
                         </div>
 
-                        <div id="lapCatatan" class="textarea-laporan editor"
-                            contenteditable="true"
+                        <div id="lapCatatan" class="textarea-laporan editor" contenteditable="true"
                             data-placeholder="Tuliskan hasil konseling..."></div>
-                    </td>
-                </tr>
-
-                <!-- CATATAN -->
-                <tr>
-                    <th>Catatan</th>
-                    <td>
-                        <div class="editor-toolbar">
-                            <button type="button" onclick="formatText('bold')"><b>B</b></button>
-                            <button type="button" onclick="formatText('italic')"><i>I</i></button>
-                            <button type="button" onclick="formatText('underline')"><u>U</u></button>
-                            <button type="button" onclick="formatText('insertUnorderedList')">
-                                <i class="fa-solid fa-list"></i>
-                            </button>
-                            <button type="button" onclick="formatText('insertOrderedList')">
-                                <i class="fa-solid fa-list-ol"></i>
-                            </button>
-                        </div>
-
-                        <div id="pesanSiswa" class="textarea-laporan editor"
-                            contenteditable="true"
-                            data-placeholder="Catatan tambahan..."></div>
                     </td>
                 </tr>
             </table>
@@ -321,14 +291,21 @@
             <label>Siswa</label><br>
             <select name="id_siswa" required>
                 @foreach($siswa as $s)
-                <option value="{{ $s->id }}">{{ $s->nama }}</option>
+                    <option value="{{ $s->id }}">{{ $s->nama }}</option>
                 @endforeach
             </select>
             <br><br>
             <label>Kategori</label><br>
             <select name="id_kategori" required>
                 @foreach($kategori as $k)
-                <option value="{{ $k->id }}">{{ $k->nama_kategori }}</option>
+                    <option value="{{ $k->id }}">{{ $k->nama_kategori }}</option>
+                @endforeach
+            </select>
+            <br><br>
+            <label>Konselor</label><br>
+            <select name="id_konselor" required>
+                @foreach($konselor as $k)
+                    <option value="{{ $k->id }}">{{ $k->nama }}</option>
                 @endforeach
             </select>
             <br><br>
@@ -355,7 +332,8 @@
         </div>
         <div class="modal-content">
             {{-- Area chat riwayat pesan --}}
-            <div class="chat-bubble" id="chatDisplay" style="min-height:80px; max-height:300px; overflow-y:auto; margin-bottom:12px;">
+            <div class="chat-bubble" id="chatDisplay"
+                style="min-height:80px; max-height:300px; overflow-y:auto; margin-bottom:12px;">
                 <p style="color:#aaa; font-size:13px; text-align:center;" id="chatKosong">Belum ada pesan</p>
             </div>
 
@@ -365,10 +343,13 @@
                     <button type="button" onclick="formatTextPesan('bold')"><b>B</b></button>
                     <button type="button" onclick="formatTextPesan('italic')"><i>I</i></button>
                     <button type="button" onclick="formatTextPesan('underline')"><u>U</u></button>
-                    <button type="button" onclick="formatTextPesan('insertUnorderedList')"><i class="fa-solid fa-list"></i></button>
-                    <button type="button" onclick="formatTextPesan('insertOrderedList')"><i class="fa-solid fa-list-ol"></i></button>
+                    <button type="button" onclick="formatTextPesan('insertUnorderedList')"><i
+                            class="fa-solid fa-list"></i></button>
+                    <button type="button" onclick="formatTextPesan('insertOrderedList')"><i
+                            class="fa-solid fa-list-ol"></i></button>
                 </div>
-                <div id="inputPesan" class="textarea-laporan editor" contenteditable="true" placeholder="Tulis pesan ke siswa..."></div>
+                <div id="inputPesan" class="textarea-laporan editor" contenteditable="true"
+                    placeholder="Tulis pesan ke siswa..."></div>
             </div>
         </div>
         <div class="modal-actions">
@@ -383,7 +364,7 @@
 
 <script>
     // APPLY FILTER
-    document.getElementById('btnFilter').onclick = function() {
+    document.getElementById('btnFilter').onclick = function () {
         let url = new URL(window.location.href);
 
         const tanggal = document.getElementById('filterTanggal').value;
@@ -454,12 +435,12 @@
         createChip(label, 'konselor');
     });
     // RESET
-    document.getElementById('reset').onclick = function() {
+    document.getElementById('reset').onclick = function () {
         window.location.href = window.location.pathname;
     };
 
     // SEARCH REALTIME
-    document.getElementById('searchInput').addEventListener('keyup', function() {
+    document.getElementById('searchInput').addEventListener('keyup', function () {
         let value = this.value.toLowerCase();
 
         document.querySelectorAll('tbody tr').forEach(row => {
@@ -468,7 +449,7 @@
                 'none';
         });
     });
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         document.querySelectorAll('.catatan').forEach(btn => {
             btn.onclick = () => {
                 document.getElementById('modalCatatan').style.display = 'flex';
@@ -492,13 +473,13 @@
             modalTambah.style.display = 'none';
         };
 
-        document.getElementById('formTambahKonseling').onsubmit = function(e) {
+        document.getElementById('formTambahKonseling').onsubmit = function (e) {
             e.preventDefault();
 
             fetch('/admin/konseling/store', {
-                    method: 'POST',
-                    body: new FormData(this)
-                })
+                method: 'POST',
+                body: new FormData(this)
+            })
                 .then(res => res.json())
                 .then(res => {
                     alert(res.message);
@@ -522,7 +503,7 @@
                 selectKonselor.value = btn.dataset.konselor || '';
             };
         });
-        document.getElementById('batalKonselor').onclick = function() {
+        document.getElementById('batalKonselor').onclick = function () {
             document.getElementById('modalEditKonselor').style.display = 'none';
         };
 
@@ -539,17 +520,17 @@
             document.getElementById('modalDetail').style.display = 'none';
         };
 
-        document.getElementById('simpanKonselor').onclick = function() {
+        document.getElementById('simpanKonselor').onclick = function () {
 
             let formData = new FormData(document.getElementById('formEditKonselor'));
 
             fetch('/admin/konseling/update-konselor', {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                    },
-                    body: formData
-                })
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: formData
+            })
                 .then(res => res.json())
                 .then(res => {
                     alert(res.message);
@@ -586,7 +567,6 @@
                                 </div>`;
                             });
                             chatDisplay.innerHTML = html;
-                            // Scroll ke bawah
                             chatDisplay.scrollTop = chatDisplay.scrollHeight;
                         }
                     })
@@ -603,7 +583,7 @@
         });
 
         // ── Kirim pesan ──────────────────────────────────────
-        document.getElementById('kirimPesan').addEventListener('click', function() {
+        document.getElementById('kirimPesan').addEventListener('click', function () {
             const pesan = document.getElementById('inputPesan').innerHTML.trim();
             if (!pesan) {
                 alert('Pesan tidak boleh kosong');
@@ -615,9 +595,9 @@
             formData.append('_token', '{{ csrf_token() }}');
 
             fetch(`/admin/laporan/${currentPesanId}/simpan-pesan`, {
-                    method: 'POST',
-                    body: formData
-                })
+                method: 'POST',
+                body: formData
+            })
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
@@ -750,7 +730,7 @@
         // =========================
         // BUTTON AKSI
         // =========================
-        btnSubmit.onclick = function() {
+        btnSubmit.onclick = function () {
 
             // MODE VIEW → EDIT
             if (mode === 'view') {
@@ -786,12 +766,12 @@
             }
 
             fetch('/admin/laporan/simpan', {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                    },
-                    body: formData
-                })
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: formData
+            })
                 .then(async res => {
                     let text = await res.text();
 
@@ -833,7 +813,7 @@
     }
 
     // preview setelah disimpan
-    document.getElementById('buktiFile').addEventListener('change', function(e) {
+    document.getElementById('buktiFile').addEventListener('change', function (e) {
         const file = e.target.files[0];
         if (!file) return;
 
@@ -845,7 +825,7 @@
 
         if (file.type.startsWith('image/')) {
             const reader = new FileReader();
-            reader.onload = function(event) {
+            reader.onload = function (event) {
                 previewImage.src = event.target.result;
                 previewImage.style.display = 'block';
             };
@@ -900,7 +880,7 @@
     }
 
     // jalankan pertama kali
-    window.onload = function() {
+    window.onload = function () {
         showTablePage();
     };
 </script>

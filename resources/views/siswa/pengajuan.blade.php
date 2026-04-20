@@ -6,7 +6,8 @@
             <div class="col-md-12">
                 <div class="title-body">
                     <h3>Pengajuan Konseling</h3>
-                    <p>Ajukan permohonan konseling sesuai permasalahan yang sedang kamu hadapi. Data yang kamu kirim bersifat rahasia.</p>
+                    <p>Ajukan permohonan konseling sesuai permasalahan yang sedang kamu hadapi. Data yang kamu kirim
+                        bersifat rahasia.</p>
                 </div>
             </div>
         </div>
@@ -18,10 +19,9 @@
                         <select id="filterKategori">
                             <option value="">Pilih Kategori</option>
                             @foreach($kategori as $k)
-                            <option value="{{ $k->nama_kategori }}"
-                                {{ request('kategori') == $k->nama_kategori ? 'selected' : '' }}>
-                                {{ $k->nama_kategori }}
-                            </option>
+                                <option value="{{ $k->nama_kategori }}" {{ request('kategori') == $k->nama_kategori ? 'selected' : '' }}>
+                                    {{ $k->nama_kategori }}
+                                </option>
                             @endforeach
                         </select>
                         <button id="btnFilter">Terapkan</button>
@@ -48,17 +48,17 @@
                         </thead>
                         <tbody id="tableBody">
                             @forelse($pengajuan as $item)
-                            <tr>
-                                <td>{{ \Carbon\Carbon::parse($item->tanggal_pengajuan)->format('d M Y') }}</td>
-                                <td>{{ $item->kategori->nama_kategori }}</td>
-                                <td> <span class="{{ $item->status }}">
-                                        {{ ucfirst($item->status) }}
-                                    </span></td>
-                            </tr>
+                                <tr>
+                                    <td>{{ \Carbon\Carbon::parse($item->tanggal_pengajuan)->format('d M Y') }}</td>
+                                    <td>{{ $item->kategori->nama_kategori }}</td>
+                                    <td> <span class="{{ $item->status }}">
+                                            {{ ucfirst($item->status) }}
+                                        </span></td>
+                                </tr>
                             @empty
-                            <tr>
-                                <td colspan="3" style="text-align:center;">Belum ada pengajuan</td>
-                            </tr>
+                                <tr>
+                                    <td colspan="3" style="text-align:center;">Belum ada pengajuan</td>
+                                </tr>
                             @endforelse
                         </tbody>
                     </table>
@@ -67,8 +67,7 @@
                     <button onclick="prevPage()">
                         <p> Kembali </p>
                     </button>
-                    <span class="number"
-                        id="pageInfo">
+                    <span class="number" id="pageInfo">
                     </span>
                     <button onclick="nextPage()">
                         <p> Berikutnya </p>
@@ -88,7 +87,7 @@
                             <select name="id_kategori" required>
                                 <option value="">Pilih kategori</option>
                                 @foreach($kategori as $k)
-                                <option value="{{ $k->id }}">{{ $k->nama_kategori }}</option>
+                                    <option value="{{ $k->id }}">{{ $k->nama_kategori }}</option>
                                 @endforeach
                             </select>
 
@@ -105,7 +104,7 @@
                         <select name="id_konselor" required>
                             <option value="">-- Pilih Konselor --</option>
                             @foreach($konselor as $k)
-                            <option value="{{ $k->id }}">{{ $k->nama }}</option>
+                                <option value="{{ $k->id }}">{{ $k->nama }}</option>
                             @endforeach
                         </select>
                         <br><br>
@@ -124,19 +123,37 @@
     </div>
 </section>
 
+<div id="berhasilMengajukan" class="modal-overlay">
+    <div class="modal-box modal-success">
+
+        <div class="success-icon">
+            <i class="fa-regular fa-circle-check"></i>
+        </div>
+
+        <h2 class="success-title">Berhasil</h2>
+
+        <p id="successMessagePengajuan" class="success-text"></p>
+        <div class="modal-actions">
+            <button id="btnCloseBerhasilPengajuan" class="btn-kirim">Tutup</button>
+        </div>
+
+    </div>
+</div>
 @include('layout/footer')
 
 <script>
     flatpickr("#tanggal_konsultasi", {
         inline: true,
         dateFormat: "Y-m-d",
-
-        onChange: function(selectedDates, dateStr) {
+        onReady: function (selectedDates, dateStr, instance) {
+            instance.calendarContainer.classList.add('kal-jadwal');
+        },
+        onChange: function (selectedDates, dateStr) {
             document.getElementById('tanggal_hidden').value = dateStr;
         }
     });
 
-    document.getElementById('btnFilter').onclick = function() {
+    document.getElementById('btnFilter').onclick = function () {
         const tanggal = document.getElementById('filterTanggal').value;
         const kategori = document.getElementById('filterKategori').value;
 
@@ -159,7 +176,7 @@
         popup.classList.remove('show');
     });
 
-    document.querySelector('.submit-btn').addEventListener('click', function() {
+    document.querySelector('.submit-btn').addEventListener('click', function () {
         document.getElementById('formPengajuan').requestSubmit();
     });
     const tanggal = document.getElementById('filterTanggal');
@@ -205,7 +222,8 @@
         window.location.href = window.location.pathname;
     });
 
-    document.getElementById('formPengajuan').onsubmit = function(e) {
+    // SUBMIT PENGAJUAN
+    document.getElementById('formPengajuan').onsubmit = function (e) {
         e.preventDefault();
 
         let formData = new FormData(this);
@@ -213,6 +231,7 @@
         const tanggal = document.getElementById('tanggal_hidden').value;
         const idKonselor = document.querySelector('[name="id_konselor"]').value;
 
+        // VALIDASI
         if (!tanggal) {
             alert('Pilih tanggal dulu ya!');
             return;
@@ -226,22 +245,47 @@
         formData.append('id_konselor', idKonselor);
 
         fetch('/siswa/pengajuan/store', {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                },
-                body: formData
-            })
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: formData
+        })
             .then(res => res.json())
             .then(res => {
-                alert(res.message);
-                location.reload();
+
+                // FORMAT TANGGAL
+                let formattedTanggal = new Date(tanggal).toLocaleDateString('id-ID', {
+                    day: '2-digit',
+                    month: 'long',
+                    year: 'numeric'
+                });
+
+                // TAMPILKAN MODAL
+                document.getElementById('berhasilMengajukan').style.display = 'flex';
+
+                // ISI PESAN (INI YANG KAMU MAU)
+                document.getElementById('successMessagePengajuan').textContent =
+                    `Pengajuan pada ${formattedTanggal} berhasil dikirim, laksanakan konseling pada tanggal tersebut di jam 09.35 / istirahat pertama jika konseling diterima.`;
+
+                // TUTUP POPUP FORM
+                document.getElementById('popupPengajuan').classList.remove('show');
+
+                // OPTIONAL: reset form biar bersih
+                document.getElementById('formPengajuan').reset();
             })
             .catch(() => {
                 alert('Gagal mengajukan');
             });
     };
 
+
+    // TOMBOL TUTUP MODAL BERHASIL
+    document.getElementById('btnCloseBerhasilPengajuan').addEventListener('click', function () {
+        document.getElementById('berhasilMengajukan').style.display = 'none';
+        location.reload(); // reload biar data langsung update
+    });
+    
     //slide
     let currentPage = 1;
     let rowsPerPage = 10;
@@ -285,7 +329,7 @@
     }
 
     // jalankan pertama kali
-    window.onload = function() {
+    window.onload = function () {
         showTablePage();
     };
 </script>

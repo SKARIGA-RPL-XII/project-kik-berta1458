@@ -10,12 +10,5 @@ class KonselorSeeder extends Seeder
 {
     public function run(): void
     {
-        $userKonselor = User::where('role', 'konselor')->first();
-
-        Konselor::create([
-            'id_user' => $userKonselor->id,
-            'nip'     => '20444',
-            'nama'    => 'Intan Saraswati, S.Pd',
-        ]);
     }
 }

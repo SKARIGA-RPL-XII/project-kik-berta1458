@@ -40,7 +40,6 @@ class PengajuanKonseling extends Model
 
     public function pesan()
 {
-    return $this->hasMany(PesanKonseling::class, 'id_pengajuan')
-                ->orderBy('created_at', 'asc');
+    return $this->hasMany(PesanKonseling::class, 'id_pengajuan');
 }
 }

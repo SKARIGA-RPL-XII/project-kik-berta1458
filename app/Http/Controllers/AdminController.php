@@ -250,11 +250,13 @@ class AdminController extends Controller
             'id_siswa' => 'required',
             'id_kategori' => 'required',
             'tanggal_pengajuan' => 'required|date',
+            'id_konselor' => 'required'
         ]);
 
         PengajuanKonseling::create([
             'id_siswa' => $request->id_siswa,
             'id_kategori' => $request->id_kategori,
+            'id_konselor' => $request->id_konselor,
             'tanggal_pengajuan' => $request->tanggal_pengajuan,
             'deskripsi_masalah' => $request->deskripsi_masalah ?? '-',
             'status' => 'dijadwalkan'

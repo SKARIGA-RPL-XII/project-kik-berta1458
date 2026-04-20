@@ -10,25 +10,21 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('laporan_konseling', function (Blueprint $table) {
+        Schema::create('pesan_konseling', function (Blueprint $table) {
             $table->id();
 
             $table->foreignId('id_pengajuan')
                 ->constrained('pengajuan_konseling')
                 ->onDelete('cascade');
 
-            $table->text('hasil_catatan');
-            $table->string('bukti_file')->nullable();
-
+            $table->text('isi_pesan');
+            $table->enum('pengirim', ['konselor', 'admin']); // opsional tapi penting
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('laporan_konseling');
+        Schema::dropIfExists('pesan_konseling');
     }
 };

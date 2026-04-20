@@ -19,12 +19,15 @@ class AuthController extends Controller
         $request->validate([
             'username' => 'required',
             'password' => 'required'
+        ], [
+            'username.required' => 'Username wajib diisi',
+            'password.required' => 'Password wajib diisi'
         ]);
 
         $user = User::where('username', $request->username)->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
-            return back()->with('error', 'Username atau password salah');
+            return back()->with('error', 'Login gagal, pastikan username dan password benar');
         }
 
         session([

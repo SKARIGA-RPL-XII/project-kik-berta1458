@@ -1,6 +1,6 @@
 @include('layout/header')
 
-<section class="banner-siswa">
+<section class="banner-siswa ">
     <div class="container">
         <div class="row">
             <div class="col-md-12">
